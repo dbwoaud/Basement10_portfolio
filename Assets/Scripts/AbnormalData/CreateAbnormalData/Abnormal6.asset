@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ff59819c00fdcc4c92fc1720efd28de, type: 3}
+  m_Name: Abnormal6
+  m_EditorClassIdentifier: 
+  abnormalName: "6. \uB298\uC5B4\uB09C \uB178\uB780 \uB4DC\uB7FC\uD1B5"
+  abnormalDescription: "\uB215\uD600\uC9C4 \uB178\uB780 \uB4DC\uB7FC\uD1B5\uC774
+    \uB298\uC5B4\uB0AC\uB2E4"
+  spawnList:
+  - spawnGameObject: {fileID: 122098, guid: 2e72964dc9f28e147be652175f1303f6, type: 3}
+    spawnPosition: {x: -10.675, y: -1.5, z: 43}
+    spawnRotation: {x: 90, y: 0, z: 0}
+    spawnScale: {x: 1, y: 1, z: 1}
+  - spawnGameObject: {fileID: 122098, guid: 2e72964dc9f28e147be652175f1303f6, type: 3}
+    spawnPosition: {x: -10.675, y: -1.5, z: 49}
+    spawnRotation: {x: 90, y: 0, z: 0}
+    spawnScale: {x: 1, y: 1, z: 1}
+  - spawnGameObject: {fileID: 122098, guid: 2e72964dc9f28e147be652175f1303f6, type: 3}
+    spawnPosition: {x: -11.776, y: -1.5, z: 43}
+    spawnRotation: {x: 90, y: 0, z: 0}
+    spawnScale: {x: 1, y: 1, z: 1}
+  - spawnGameObject: {fileID: 122098, guid: 2e72964dc9f28e147be652175f1303f6, type: 3}
+    spawnPosition: {x: -11.776, y: -1.5, z: 49}
+    spawnRotation: {x: 90, y: 0, z: 0}
+    spawnScale: {x: 1, y: 1, z: 1}
+  - spawnGameObject: {fileID: 122098, guid: 2e72964dc9f28e147be652175f1303f6, type: 3}
+    spawnPosition: {x: -11.207, y: -0.646, z: 43}
+    spawnRotation: {x: 90, y: 0, z: 0}
+    spawnScale: {x: 1, y: 1, z: 1}
+  - spawnGameObject: {fileID: 122098, guid: 2e72964dc9f28e147be652175f1303f6, type: 3}
+    spawnPosition: {x: -11.207, y: -0.646, z: 49}
+    spawnRotation: {x: 90, y: 0, z: 0}
+    spawnScale: {x: 1, y: 1, z: 1}
