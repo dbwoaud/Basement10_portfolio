@@ -69,7 +69,7 @@
         ElevatorController.OnElevatorAnswerSelected -= CheckAnswer;
     }
 ```
-[🔗**EndingTrigger.cs 코드 보기**]
+[🔗**EndingTrigger.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Enviroment/EndingTrigger.cs#L13-L23)
 [🔗**Gamemanger.cs 코드 보기**]
 ### **3. 다형성 기반의 이상 현상 시스템**
 
