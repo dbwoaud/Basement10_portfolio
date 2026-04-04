@@ -1,3 +1,4 @@
+```mermaid
 graph TD
     subgraph Input_Layer
         PI[PlayerInput] --> PM[PlayerMovement]
@@ -24,3 +25,4 @@ graph TD
         BEM[BadEndingManager] --> BU[BadEndingUIManager]
         TEM[TrueEndingManager] --> TU[TrueEndingUIManager]
     end
+```
