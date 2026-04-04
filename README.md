@@ -2,7 +2,6 @@
 # **🕹️ [프로젝트] 지하 10층**
 
 > **"8번 출구 게임과 영화에서 영감을 얻어, 스토리를 추가하고 다형성과 데이터 주도 설계로 재해석한 1인 개발 호러 퍼즐 게임입니다."**
-> 
 
 ---
 
@@ -20,62 +19,34 @@
 
 컴퓨터공학과 전공자로서 **유지보수성과 확장성**을 고려한 설계를 지향했습니다.
 
+
 ### **1. 매니저 패턴 & 싱글톤**
 
 - `Singleton<T>` 베이스 클래스를 상속받아 `GameManager`, `SoundManager`, `FadeManager` 등 핵심 시스템의 단일성을 보장하고 전역 접근성을 확보했습니다.
+https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Core/Singleton.cs#L5-L22
 
-```
-// Singleton.cs: 모든 매니저 시스템의 기반이 되는 제네릭 싱글톤 베이스 클래스
-    public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
-    {
-        private static T _instance;
-        public static T instance {
-            get {
-                if(_instance == null) {
-                    _instance = FindFirstObjectByType<T>();
-                }
-                return _instance;
-            }
-        }
-    }
-```
-
-[🔗**전체 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/76718a169e383d6a0661d766ecf0e189015d773f/Scripts/Core/Singleton.cs)
+- [🔗**Singleton.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/76718a169e383d6a0661d766ecf0e189015d773f/Scripts/Core/Singleton.cs)
 
 - 각 매니저는 단일 책임 원칙(SRP)을 준수하여 자신의 역할(사운드 재생, 페이드 효과, 게임 루프 제어)에만 집중하도록 설계되었습니다.
+
 
 ### **2. 이벤트 기반 & 느슨한 결합**
 
 - `Action`과 이벤트를 활용해 시스템 간 직접 참조를 최소화했습니다.
 - 예를 들어, `EndingTrigger`는 엔딩 로직을 직접 실행하지 않고 이벤트를 발생시키며, 이를 `GameManager`가 구독하여 처리하는 **느슨한 결합** 구조를 취했습니다.
+https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Enviroment/EndingTrigger.cs#L11-L23
+https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Managers/GameManager.cs#L48-L58
 
-```
-// EndingTrigger.cs: 직접 참조 없이 이벤트 발행을 통한 상태 전파
-    public static event Action<EndType> OnEndingTriggered;
-    OnEndingTriggered?.Invoke(endType);
-```
+- [🔗**EndingTrigger.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Enviroment/EndingTrigger.cs#L13-L23)
+- [🔗**GameManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/701cac8f09ba2184baf4edd2bcdd0ad9ca7d0149/Scripts/Managers/GameManager.cs#L249-L276)
 
-```
-// GameManager.cs: 이벤트를 구독하여 처리
-    private void OnEnable()
-    {
-        EndingTrigger.OnEndingTriggered += ProcessEnding;
-        ElevatorController.OnElevatorAnswerSelected += CheckAnswer;
-    }
 
-    private void OnDisable()
-    {
-        EndingTrigger.OnEndingTriggered -= ProcessEnding;
-        ElevatorController.OnElevatorAnswerSelected -= CheckAnswer;
-    }
-```
-[🔗**EndingTrigger.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Enviroment/EndingTrigger.cs#L13-L23)
-[🔗**Gamemanger.cs 코드 보기**]
 ### **3. 다형성 기반의 이상 현상 시스템**
 
 - **추상화:** `AbnormalData` 라는 추상 클래스를 설계하여 모든 이상 현상의 공통 동작 `ApplyAbnormal` 을 정의했습니다.
 - **구체화**: 생성(`Create`), 삭제(`Delete`), 교체(`Replace`), 크기 변형(`Scale`), 사운드 변조(`Sound`) 등 각기 다른 로직을 자식 클래스에서 독립적으로 구현했습니다.
 - 새로운 형태의 이상 현상을 추가할 때 기존 시스템 코드(예: `SpawnAbnormalManager`)를 수정할 필요 없이 새로운 클래스만 추가하면 되는 개방 폐쇄 원칙(OCP)을 실천했습니다.
+
 
 ### **4. 컴포넌트 기반의 동적 기능 확장**
 
@@ -90,6 +61,9 @@
 
 - **Problem**: 맵 오브젝트 내 수많은 하위 계층에서 특정 타겟을 찾을 때, 유니티 내장 `Find` 함수의 $*O(N)*$ 전수 조사로 인한 성능 저하 우려.
 - **Solution**: `Stack<Transform>` 자료구조를 활용하여 재귀 없이 깊이 우선 탐색(DFS)을 직접 구현함으로써 탐색 효율을 $*O(M)*$ 수준으로 최적화했습니다.
+- https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Core/AbnormalData.cs#L11-L30
+
+
 - **Benefit**: 탐색 범위를 특정 루트 하위로 국소화하여 시간 복잡도를 *O*(*M*) (*M*≪*N*) 수준으로 낮추고, 재귀 호출 대신 반복문을 사용하여 스택 오버플로 위험을 방지했습니다.
 
 ### **2. [데이터 주도] ScriptableObject를 활용한 설계**
