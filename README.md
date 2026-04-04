@@ -26,18 +26,18 @@
 
 ```
 // Singleton.cs: 모든 매니저 시스템의 기반이 되는 제네릭 싱글톤 베이스 클래스
-public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
-{
-    private static T _instance;
-    public static T instance {
-        get {
-            if(_instance == null) {
-                _instance = FindFirstObjectByType<T>();
+    public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
+    {
+        private static T _instance;
+        public static T instance {
+            get {
+                if(_instance == null) {
+                    _instance = FindFirstObjectByType<T>();
+                }
+                return _instance;
             }
-            return _instance;
         }
     }
-}
 ```
 
 [🔗**전체 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/76718a169e383d6a0661d766ecf0e189015d773f/Scripts/Core/Singleton.cs)
@@ -51,10 +51,26 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 
 ```
 // EndingTrigger.cs: 직접 참조 없이 이벤트 발행을 통한 상태 전파
-public static event Action<EndType> OnEndingTriggered;
-OnEndingTriggered?.Invoke(endType);
+    public static event Action<EndType> OnEndingTriggered;
+    OnEndingTriggered?.Invoke(endType);
 ```
 
+```
+// GameManager.cs: 이벤트를 구독하여 처리
+    private void OnEnable()
+    {
+        EndingTrigger.OnEndingTriggered += ProcessEnding;
+        ElevatorController.OnElevatorAnswerSelected += CheckAnswer;
+    }
+
+    private void OnDisable()
+    {
+        EndingTrigger.OnEndingTriggered -= ProcessEnding;
+        ElevatorController.OnElevatorAnswerSelected -= CheckAnswer;
+    }
+```
+[🔗**EndingTrigger.cs 코드 보기**]
+[🔗**Gamemanger.cs 코드 보기**]
 ### **3. 다형성 기반의 이상 현상 시스템**
 
 - **추상화:** `AbnormalData` 라는 추상 클래스를 설계하여 모든 이상 현상의 공통 동작 `ApplyAbnormal` 을 정의했습니다.
