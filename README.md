@@ -23,15 +23,37 @@
 ### **1. 매니저 패턴 & 싱글톤**
 
 - `Singleton<T>` 베이스 클래스를 상속받아 `GameManager`, `SoundManager`, `FadeManager` 등 핵심 시스템의 단일성을 보장하고 전역 접근성을 확보했습니다.
-- https://github.com/dbwoaud/Basement10_portfolio/blob/76718a169e383d6a0661d766ecf0e189015d773f/Scripts/Core/Singleton.cs#L3-L22
+
+```
+// Singleton.cs: 모든 매니저 시스템의 기반이 되는 제네릭 싱글톤 베이스 클래스
+public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
+{
+    private static T _instance;
+    public static T instance {
+        get {
+            if(_instance == null) {
+                _instance = FindFirstObjectByType<T>();
+            }
+            return _instance;
+        }
+    }
+}
+```
+
 [🔗**전체 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/76718a169e383d6a0661d766ecf0e189015d773f/Scripts/Core/Singleton.cs)
+
 - 각 매니저는 단일 책임 원칙(SRP)을 준수하여 자신의 역할(사운드 재생, 페이드 효과, 게임 루프 제어)에만 집중하도록 설계되었습니다.
 
 ### **2. 이벤트 기반 & 느슨한 결합**
 
 - `Action`과 이벤트를 활용해 시스템 간 직접 참조를 최소화했습니다.
-- 
 - 예를 들어, `EndingTrigger`는 엔딩 로직을 직접 실행하지 않고 이벤트를 발생시키며, 이를 `GameManager`가 구독하여 처리하는 **느슨한 결합** 구조를 취했습니다.
+
+```
+// EndingTrigger.cs: 직접 참조 없이 이벤트 발행을 통한 상태 전파
+public static event Action<EndType> OnEndingTriggered;
+OnEndingTriggered?.Invoke(endType);
+```
 
 ### **3. 다형성 기반의 이상 현상 시스템**
 
