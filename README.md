@@ -136,5 +136,5 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 ## **🔗 참조**
 
 - **Notion**: [[지하 10층 Notion 링크]](https://www.notion.so/10-f31faf7d496e828dab0501cd8dd8dae3)
-- **YouTube**: [[기술 데모 영상 링크]] (https://youtu.be/xBqUJMUoHfk)
+- **YouTube**: [[기술 데모 영상 링크]](https://youtu.be/xBqUJMUoHfk)
 - **GamePlay**: [[지하 10층 게임 플레이 링크]](https://play.unity.com/en/games/f70be496-178a-48ad-8ecf-22160b68f56f/basement10web)
