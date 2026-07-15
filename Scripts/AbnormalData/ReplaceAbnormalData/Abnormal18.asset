@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35834a52bf5583440ac265164b3d7017, type: 3}
+  m_Name: Abnormal18
+  m_EditorClassIdentifier: 
+  abnormalName: "18. \uBD88\uAEBC\uC9C4 \uD615\uAD11\uB4F1"
+  abnormalDescription: "\uD615\uAD11\uB4F1\uC758 \uBD88\uC774 \uBAA8\uB450 \uAEBC\uC84C\uB2E4"
+  replaceList:
+  - targetObjectName: Lamp1
+    newGameObject: {fileID: 155090, guid: 2cf0d7e6680125c458ae53466f8aa459, type: 3}
+  - targetObjectName: Lamp2
+    newGameObject: {fileID: 155090, guid: 2cf0d7e6680125c458ae53466f8aa459, type: 3}
+  - targetObjectName: Lamp3
+    newGameObject: {fileID: 155090, guid: 2cf0d7e6680125c458ae53466f8aa459, type: 3}
+  - targetObjectName: Lamp4
+    newGameObject: {fileID: 155090, guid: 2cf0d7e6680125c458ae53466f8aa459, type: 3}
+  - targetObjectName: Lamp5
+    newGameObject: {fileID: 155090, guid: 2cf0d7e6680125c458ae53466f8aa459, type: 3}
+  - targetObjectName: Lamp6
+    newGameObject: {fileID: 155090, guid: 2cf0d7e6680125c458ae53466f8aa459, type: 3}
+  - targetObjectName: Lamp7
+    newGameObject: {fileID: 155090, guid: 2cf0d7e6680125c458ae53466f8aa459, type: 3}
+  - targetObjectName: Lamp8
+    newGameObject: {fileID: 155090, guid: 2cf0d7e6680125c458ae53466f8aa459, type: 3}

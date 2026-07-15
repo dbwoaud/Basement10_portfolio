@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb2d90d349e68ee43b4344729721f89e, type: 3}
+  m_Name: Abnormal31
+  m_EditorClassIdentifier: 
+  abnormalName: "31. \uC810\uC810 \uCEE4\uC9C0\uB294 \uB7A8\uD504\uB4F1"
+  abnormalDescription: "\uBE68\uAC04 \uB7A8\uD504\uB4F1\uC758 \uD06C\uAE30\uAC00
+    \uC810\uC810 \uCEE4\uC9C4\uB2E4"
+  scaleList:
+  - targetObjectName: StartRedLamp1
+    targetScale: {x: 3, y: 3, z: 3}
+    scaleMode: 1
+    duration: 15
+  - targetObjectName: StartRedLamp2
+    targetScale: {x: 3, y: 3, z: 3}
+    scaleMode: 1
+    duration: 15
+  - targetObjectName: EndRedLamp1
+    targetScale: {x: 3, y: 3, z: 3}
+    scaleMode: 1
+    duration: 15
+  - targetObjectName: EndRedLamp2
+    targetScale: {x: 3, y: 3, z: 3}
+    scaleMode: 1
+    duration: 15
