@@ -96,34 +96,121 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 
 ---
 
-## **⚠️ 트러블 슈팅: 런타임 모델 및 애니메이션 시스템 동적 교체**
+## ⚠️ 트러블슈팅: 이상현상 NPC의 외형 전환 구현
 
-### **1. 문제 상황**
+### 1. 문제 상황
 
-- **상황**: 1인 개발 과정에서 맵 내 NPC 모델의 외형이 실시간으로 변하는 이상 현상을 구현해야 했습니다. 맵 프리팹 생성 시 해당 NPC 모델을 Instantiate와 Destroy를 이용하여 동적으로 생성하고 삭제하는 방법은 가비지 컬렉션을 최소화하는 방법이 아니기 때문에 적용하지 못하고, 맵 프리팹 내에 이상현상이 발생한 NPC 모델과 이상현상이 발생하지 않는 NPC 모델을 같이 배치하여 SetActive를 이용하는 방식 역시 맵에 실제 사용되는 NPC 모델은 하나지만, 프리팹 NPC 모델을 2개 배치하는 방식 역시 비효율적이라 생각했습니다. 그래서, 기존 NPC의 3D 모델과 애니메이션을 런타임에 통째로 교체해야 하는 방식을 생각했고, 이를 구현해야 하는 과제가 발생했습니다.
-- **어려움**: 단순히 오브젝트를 교체하는 것과 달리, 애니메이션이 적용된 모델은 `SkinnedMeshRenderer`, `Avatar`, `RuntimeAnimatorController` 등 복잡한 종속 관계를 가지고 있어 기존 방식을 적용하면 애니메이션이 깨지거나 모델이 비정상적으로 출력되는 문제가 발생했습니다.
+맵 내 NPC의 외형이 **이상현상 발생 시 실시간으로 변하는** 연출을 구현해야 했습니다. 평소에는 무표정한 연구원이지만, 이상현상이 감지되면 섬뜩한 표정으로 바뀌는 것이 핵심 연출이었습니다.
 
-### **2. 원인 분석 및 기술적 한계**
+이를 구현하기 위해 세 가지 방식을 검토했습니다.
 
-- **전문 지식의 부재**: 클라이언트 프로그래머로서 로직 구현에는 익숙했지만, 애니메이션 프로그래머가 전문적으로 다루는 뼈대 구조와 아바타 시스템에 대한 이해가 부족했습니다.
-- **컴포넌트 종속성**: 유니티의 `Animator`는 특정 `Avatar`와 `Controller`에 강하게 결합되어 있어, 런타임에 `SkinnedMeshRenderer`만 교체한다고 해서 애니메이션이 즉시 적용되지 않는 구조적 특성을 파악했습니다.
+| 방식 | 검토 결과 |
+|---|---|
+| `Instantiate` / `Destroy`로 모델 교체 | 잦은 생성·삭제로 GC 부담 발생 → 배제 |
+| 두 모델을 배치하고 `SetActive` 토글 | 실제 사용되는 모델은 하나인데 프리팹에 모델을 2개 배치 → 비효율적이라 판단 → 배제 |
+| **런타임에 모델·애니메이션을 통째로 교체** | 채택 (→ 1차 시도) |
 
-### **3. 해결 방법**
+`SetActive` 방식이 가장 단순했지만, "실사용 모델은 하나"라는 점에서 리소스를 이중으로 배치하는 것이 부적절하다고 판단해, 하나의 NPC를 런타임에 교체하는 방향으로 접근했습니다.
 
-애니메이션 시스템의 내부 작동 원리를 분석하여 Cleanup - Rebind - Sequence의 3단계 처리 로직을 구축했습니다.
+---
 
-1. **기존 리소스 정밀 제거 (CleanUp)**:
-    - 단순 삭제가 아닌, `rootBoneName`을 추적하여 하위 뼈대 구조를 먼저 제거하고 기존의 `SkinnedMeshRenderer`를 파괴하여 메모리 충돌을 방지했습니다.
-2. **동적 컴포넌트 재설정 (Setup)**:
-    - 새로운 모델 프리팹을 인스턴스화한 후, 주체가 되는 `Animator`에 새로운 `Avatar`와 `RuntimeAnimatorController`를 수동으로 재할당했습니다.
-    - 불필요해진 자식 오브젝트의 `Animator` 컴포넌트를 제거하여 연산 낭비를 줄였습니다.
-3. **애니메이션 상태 동기화 (Sync)**:
-    - `Animator.Rebind()`와 `Update(0f)`를 호출하여 변경된 아바타 정보를 강제로 갱신했습니다.
-    - `CrossFadeInFixedTime`을 활용해 모델 교체 즉시 기본 애니메이션 상태로 부드럽게 진입하도록 구현했습니다.
-  
+### 2. 1차 시도 — 런타임 모델·애니메이션 동적 교체 (접근의 한계 발견)
 
-https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Abnormal/NPCTransformAbnormalData.cs#L1-L80
+애니메이션이 적용된 모델은 `SkinnedMeshRenderer`, `Avatar`, `RuntimeAnimatorController`가 복잡하게 결합되어 있어, 단순히 오브젝트만 교체하면 애니메이션이 깨지거나 모델이 비정상 출력되는 문제가 있었습니다.
 
+이를 해결하기 위해 애니메이션 시스템의 동작 원리를 분석해 **Cleanup → Setup → Sync**의 3단계 로직을 구축했습니다.
+
+- **Cleanup**: `rootBoneName`을 추적해 하위 뼈대 구조를 먼저 제거하고, 기존 `SkinnedMeshRenderer`를 파괴해 메모리 충돌을 방지
+- **Setup**: 새 모델을 인스턴스화한 뒤, 주체가 되는 `Animator`에 새 `Avatar`와 `RuntimeAnimatorController`를 수동 재할당. 자식 오브젝트의 불필요한 `Animator`는 제거해 연산 낭비 감소
+- **Sync**: `Animator.Rebind()`와 `Update(0f)`로 변경된 아바타 정보를 강제 갱신하고, `CrossFadeInFixedTime`으로 기본 상태에 부드럽게 진입
+
+```csharp
+private void SetupNewModel(Transform bodyTransform, Animator targetAnimator)
+{
+    GameObject newModel = Instantiate(newModelPrefab, bodyTransform);
+    newModel.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+    Animator childAnimator = newModel.GetComponent<Animator>();
+    Avatar avatarToUse = newAvatar != null ? newAvatar
+        : (childAnimator != null ? childAnimator.avatar : null);
+
+    if (childAnimator != null)
+        Destroy(childAnimator);
+
+    // Avatar / Controller를 수동으로 재할당
+    targetAnimator.enabled = false;
+    if (avatarToUse != null)
+        targetAnimator.avatar = avatarToUse;
+    if (newController != null)
+        targetAnimator.runtimeAnimatorController = newController;
+    targetAnimator.enabled = true;
+
+    // 변경된 아바타 정보를 강제 갱신
+    targetAnimator.Rebind();
+    targetAnimator.Update(0f);
+
+    if (targetAnimator.layerCount > 0)
+        targetAnimator.SetLayerWeight(0, 1f);
+    if (!string.IsNullOrEmpty(defaultAnimState))
+        targetAnimator.CrossFadeInFixedTime(defaultAnimState, 0.1f);
+}
+```
+
+> 📄 1차 방식 전체 코드: [NPCTransformAbnormalData.cs (초기 버전)](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Abnormal/NPCTransformAbnormalData.cs#L1-L80)
+
+**한계 발견**
+
+겉보기에는 정상 작동했으나, 재테스트 과정에서 교체된 모델의 **손·팔이 뒤틀리는 현상**이 발생했습니다. 원인을 추적한 결과, 문제는 교체 로직이 아니라 **모델 자체에 있었습니다.**
+
+기본 표정 모델과 이상현상 표정 모델을 AI로 **각각 따로 생성**했기 때문에, 두 모델의 스켈레톤(본 구조·바인드 포즈)이 미묘하게 달랐습니다. 이 상태에서 한 모델의 애니메이션을 다른 모델의 아바타로 리타게팅하면, 표준화 정밀도가 낮은 말단(손가락)부터 뒤틀렸습니다.
+
+즉, 아무리 교체 로직을 정교하게 다듬어도 **"모델이 둘"이라는 구조 자체가 문제의 근본 원인**이었습니다.
+
+---
+
+### 3. 2차 해결 — 블렌드셰이프 기반 단일 모델 (성공)
+
+**발상 전환**: 모델을 *교체*하는 대신, **하나의 모델**이 표정만 바꾸도록 하면 리타게팅 불일치가 원천적으로 사라진다고 판단했습니다.
+
+- **모델 제작**: Blender에서 기본 표정 모델의 얼굴 버텍스를 직접 편집해 `Smile` 블렌드셰이프를 조각. 완전한 Mixamo 스켈레톤을 가진 모델을 베이스로 사용해 리깅 일관성 확보
+- **런타임 제어**: `SkinnedMeshRenderer.SetBlendShapeWeight()`로 표정 가중치를 조절
+- **시스템 통합**: 기존 이상현상 시스템(`AbnormalData` ScriptableObject)에 그대로 결합
+
+```csharp
+public override void ApplyAbnormal(GameObject mapRoot)
+{
+    Transform target = FindTarget(mapRoot, targetName);
+    if (target == null)
+        return;
+
+    SkinnedMeshRenderer skinRenderer = target.GetComponentInChildren<SkinnedMeshRenderer>();
+    if (skinRenderer == null)
+        return;
+
+    // 이름으로 블렌드셰이프 인덱스를 조회 (하드코딩 회피)
+    int blendShapeIndex = skinRenderer.sharedMesh.GetBlendShapeIndex(smileBlendShapeName);
+    if (blendShapeIndex == -1)
+        return;
+
+    skinRenderer.SetBlendShapeWeight(blendShapeIndex, smileTargetWeight);
+}
+```
+
+> 📄 2차 방식 전체 코드: [NPCTransformAbnormalData.cs (최종 버전)](https://github.com/dbwoaud/Basement10_portfolio/blob/3b3122561798a61a5972a51668b22467bab13002/Scripts/AbnormalData/NPCTransformAbnormalData/NPCTransformAbnormalData.cs#L1-L29)
+
+**결과**
+
+- 모델이 하나로 통일되어 **애니메이션 리타게팅 문제 자체가 소멸**
+- 표정 전환이 자연스러워지고, 코드도 3단계 교체 로직에서 단순한 가중치 조절로 축소
+- 부수적으로, 표정별로 이원화되어 있던 모델·애니메이션 리소스가 절반으로 감소
+
+---
+
+### 4. 배운 점
+
+- **증상이 아니라 근본 원인을 찾는 것**이 핵심이었습니다. "손이 꼬인다"는 증상에 매달려 교체 로직을 계속 다듬었다면 해결되지 않았을 문제였고, 원인이 모델 이원화에 있음을 파악한 뒤에야 방향이 잡혔습니다.
+- **공들인 접근을 고수하지 않는 판단**이 결과적으로 더 단순하고 견고한 해결로 이어졌습니다. 1차 방식은 기술적으로 정교했지만, 문제의 뿌리를 제거하는 2차 방식이 코드·리소스·안정성 모든 면에서 우수했습니다.
+- 이 과정에서 유니티 애니메이션 시스템의 **Avatar·리타게팅 구조**와 **블렌드셰이프 파이프라인**에 대한 이해를 함께 얻었습니다.
 ### **4. 결과 및 배운 점 (Learning)**
 
 - **기술적 성장**: 낯설었던 `SkinnedMeshRenderer`, `Avatar` 등의 타입을 직접 제어하며 유니티 애니메이션 파이프라인에 대한 이해도를 높였습니다.
