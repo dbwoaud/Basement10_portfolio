@@ -38,7 +38,7 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 ### **3. 다형성 기반의 이상 현상 시스템**
 
 - **추상화:** `AbnormalData` 라는 추상 클래스를 설계하여 모든 이상 현상의 공통 동작 `ApplyAbnormal` 을 정의했습니다.
-- **구체화**: 생성(`Create`), 삭제(`Delete`), 교체(`Replace`), 크기 변형(`Scale`), 사운드 변조(`Sound`) 등 각기 다른 로직을 자식 클래스에서 독립적으로 구현했습니다.
+- **구체화**: 생성(`Create`), 삭제(`Delete`), 교체(`Replace`), 크기 변형(`Scale`), 사운드 변조(`Sound`), NPC 변형(`NPCTransform`) 등 각기 다른 로직을 자식 클래스에서 독립적으로 구현했습니다.
 - 새로운 형태의 이상 현상을 추가할 때 기존 시스템 코드(예: `SpawnAbnormalManager`)를 수정할 필요 없이 새로운 클래스만 추가하면 되는 개방 폐쇄 원칙(OCP)을 실천했습니다.
 
 ### **4. 컴포넌트 기반의 동적 기능 확장**
@@ -55,8 +55,8 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 
 ### **1. [최적화] 자료구조(Stack) 기반 DFS 탐색**
 
-- **Problem**: 맵 오브젝트 내 수많은 하위 계층에서 특정 타겟을 찾을 때, 유니티 내장 `Find` 함수의 $*O(N)*$ 전수 조사로 인한 성능 저하 우려.
-- **Solution**: `Stack<Transform>` 자료구조를 활용하여 재귀 없이 깊이 우선 탐색(DFS)을 직접 구현함으로써 탐색 효율을 $*O(M)*$ 수준으로 최적화했습니다.
+- **Problem**: 맵 오브젝트 내 수많은 하위 계층에서 특정 타겟을 찾을 때, 유니티 내장 `Find` 함수의 *O(N)* 전수 조사로 인한 성능 저하 우려.
+- **Solution**: `Stack<Transform>` 자료구조를 활용하여 재귀 없이 깊이 우선 탐색(DFS)을 직접 구현함으로써 탐색 효율을 *O(M)* 수준으로 최적화했습니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Core/AbnormalData.cs#L11-L30
 - **Benefit**: 탐색 범위를 특정 루트 하위로 국소화하여 시간 복잡도를 *O*(*M*) (*M*≪*N*) 수준으로 낮추고, 재귀 호출 대신 반복문을 사용하여 스택 오버플로 위험을 방지했습니다.
 
@@ -76,7 +76,7 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 - 전체적인 코드 내에서 `AutoBindUI()`를 통해 하위 오브젝트를 자동으로 탐색하고 할당함으로써 수동 할당의 번거로움과 휴먼 에러를 제거했습니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Managers/FadeManager.cs#L23-L41
 - [🔗 **FadeManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Managers/FadeManager.cs)
-- `FadeManager` 내에서 코루틴(Coroutine)과 `WaitUntil`을 조합하여 페이드, 사운드, 씬 전환으로 이어지는 복잡한 시퀀스를 선언적으로 관리했습니다.
+- `FadeManager` 내에서 코루틴(Coroutine)과 `WaitForSeconds`을 조합하여 페이드, 사운드, 씬 전환으로 이어지는 복잡한 시퀀스를 선언적으로 관리했습니다.
 
 ### **5. [시스템 통합] 사운드 및 로직 연동**
 
@@ -92,7 +92,6 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Enviroment/FloorNumberDisplay.cs#L55-L63
 - [🔗 **FloorNumberDisplay.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Enviroment/FloorNumberDisplay.cs#)
 - **코루틴 안정성**: `ObjectScaler`에서 새로운 스케일링 명령이 들어올 때 기존 코루틴을 중지(`StopAllCoroutines`)하여 로직 충돌을 방지하고 예측 가능한 동작을 보장했습니다.
-
 
 ---
 
@@ -123,46 +122,13 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 - **Cleanup**: `rootBoneName`을 추적해 하위 뼈대 구조를 먼저 제거하고, 기존 `SkinnedMeshRenderer`를 파괴해 메모리 충돌을 방지
 - **Setup**: 새 모델을 인스턴스화한 뒤, 주체가 되는 `Animator`에 새 `Avatar`와 `RuntimeAnimatorController`를 수동 재할당. 자식 오브젝트의 불필요한 `Animator`는 제거해 연산 낭비 감소
 - **Sync**: `Animator.Rebind()`와 `Update(0f)`로 변경된 아바타 정보를 강제 갱신하고, `CrossFadeInFixedTime`으로 기본 상태에 부드럽게 진입
-
-```csharp
-private void SetupNewModel(Transform bodyTransform, Animator targetAnimator)
-{
-    GameObject newModel = Instantiate(newModelPrefab, bodyTransform);
-    newModel.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-
-    Animator childAnimator = newModel.GetComponent<Animator>();
-    Avatar avatarToUse = newAvatar != null ? newAvatar
-        : (childAnimator != null ? childAnimator.avatar : null);
-
-    if (childAnimator != null)
-        Destroy(childAnimator);
-
-    // Avatar / Controller를 수동으로 재할당
-    targetAnimator.enabled = false;
-    if (avatarToUse != null)
-        targetAnimator.avatar = avatarToUse;
-    if (newController != null)
-        targetAnimator.runtimeAnimatorController = newController;
-    targetAnimator.enabled = true;
-
-    // 변경된 아바타 정보를 강제 갱신
-    targetAnimator.Rebind();
-    targetAnimator.Update(0f);
-
-    if (targetAnimator.layerCount > 0)
-        targetAnimator.SetLayerWeight(0, 1f);
-    if (!string.IsNullOrEmpty(defaultAnimState))
-        targetAnimator.CrossFadeInFixedTime(defaultAnimState, 0.1f);
-}
-```
-
-> 📄 1차 방식 전체 코드: [NPCTransformAbnormalData.cs (초기 버전)](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Abnormal/NPCTransformAbnormalData.cs#L1-L80)
+> 📄 1차 방식 코드: [NPCTransformAbnormalData.cs (초기 버전)](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Abnormal/NPCTransformAbnormalData.cs#L1-L80)
 
 **한계 발견**
 
 겉보기에는 정상 작동했으나, 재테스트 과정에서 교체된 모델의 **손·팔이 뒤틀리는 현상**이 발생했습니다. 원인을 추적한 결과, 문제는 교체 로직이 아니라 **모델 자체에 있었습니다.**
 
-기본 표정 모델과 이상현상 표정 모델을 AI로 **각각 따로 생성**했기 때문에, 두 모델의 스켈레톤(본 구조·바인드 포즈)이 미묘하게 달랐습니다. 이 상태에서 한 모델의 애니메이션을 다른 모델의 아바타로 리타게팅하면, 표준화 정밀도가 낮은 말단(손가락)부터 뒤틀렸습니다.
+기본 표정 모델과 이상현상 표정 모델을 AI로 **각각 따로 생성**했기 때문에, 두 모델의 스켈레톤이 미묘하게 달랐습니다. 이 상태에서 한 모델의 애니메이션을 다른 모델의 아바타로 리타게팅하면, 애니메이션이 뒤틀리는 문제가 발생했습니다.
 
 즉, 아무리 교체 로직을 정교하게 다듬어도 **"모델이 둘"이라는 구조 자체가 문제의 근본 원인**이었습니다.
 
@@ -175,27 +141,6 @@ private void SetupNewModel(Transform bodyTransform, Animator targetAnimator)
 - **모델 제작**: Blender에서 기본 표정 모델의 얼굴 버텍스를 직접 편집해 `Smile` 블렌드셰이프를 조각. 완전한 Mixamo 스켈레톤을 가진 모델을 베이스로 사용해 리깅 일관성 확보
 - **런타임 제어**: `SkinnedMeshRenderer.SetBlendShapeWeight()`로 표정 가중치를 조절
 - **시스템 통합**: 기존 이상현상 시스템(`AbnormalData` ScriptableObject)에 그대로 결합
-
-```csharp
-public override void ApplyAbnormal(GameObject mapRoot)
-{
-    Transform target = FindTarget(mapRoot, targetName);
-    if (target == null)
-        return;
-
-    SkinnedMeshRenderer skinRenderer = target.GetComponentInChildren<SkinnedMeshRenderer>();
-    if (skinRenderer == null)
-        return;
-
-    // 이름으로 블렌드셰이프 인덱스를 조회 (하드코딩 회피)
-    int blendShapeIndex = skinRenderer.sharedMesh.GetBlendShapeIndex(smileBlendShapeName);
-    if (blendShapeIndex == -1)
-        return;
-
-    skinRenderer.SetBlendShapeWeight(blendShapeIndex, smileTargetWeight);
-}
-```
-
 > 📄 2차 방식 전체 코드: [NPCTransformAbnormalData.cs (최종 버전)](https://github.com/dbwoaud/Basement10_portfolio/blob/3b3122561798a61a5972a51668b22467bab13002/Scripts/AbnormalData/NPCTransformAbnormalData/NPCTransformAbnormalData.cs#L1-L29)
 
 **결과**
@@ -211,12 +156,6 @@ public override void ApplyAbnormal(GameObject mapRoot)
 - **증상이 아니라 근본 원인을 찾는 것**이 핵심이었습니다. "손이 꼬인다"는 증상에 매달려 교체 로직을 계속 다듬었다면 해결되지 않았을 문제였고, 원인이 모델 이원화에 있음을 파악한 뒤에야 방향이 잡혔습니다.
 - **공들인 접근을 고수하지 않는 판단**이 결과적으로 더 단순하고 견고한 해결로 이어졌습니다. 1차 방식은 기술적으로 정교했지만, 문제의 뿌리를 제거하는 2차 방식이 코드·리소스·안정성 모든 면에서 우수했습니다.
 - 이 과정에서 유니티 애니메이션 시스템의 **Avatar·리타게팅 구조**와 **블렌드셰이프 파이프라인**에 대한 이해를 함께 얻었습니다.
-### **4. 결과 및 배운 점 (Learning)**
-
-- **기술적 성장**: 낯설었던 `SkinnedMeshRenderer`, `Avatar` 등의 타입을 직접 제어하며 유니티 애니메이션 파이프라인에 대한 이해도를 높였습니다.
-- **협업 역량의 확장**: 클라이언트 프로그래머로서 애니메이션/아트 직군이 다루는 데이터 구조를 이해하게 됨으로써, 추후 협업 시 기술적 가교 역할을 수행할 수 있는 기반을 마련했습니다.
-- **유연한 설계**: `NPCTransformAbnormalData`를 통해 어떤 모델로든 즉시 변환 가능한 범용적인 이상 현상 시스템을 완성했습니다.
-
 
 ---
 
