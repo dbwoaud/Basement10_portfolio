@@ -1,6 +1,10 @@
 # Basement10_portfolio
 # **🕹️ [프로젝트] 지하 10층**
 
+
+https://github.com/user-attachments/assets/64b27899-1a42-4116-ac49-444a7413d4d9
+
+
 > **"8번 출구 게임과 영화에서 영감을 얻어, 스토리를 추가하고 다형성과 데이터 주도 설계로 재해석한 1인 개발 호러 퍼즐 게임입니다."**
 
 ---
@@ -36,6 +40,10 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 - [🔗 **GameManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/701cac8f09ba2184baf4edd2bcdd0ad9ca7d0149/Scripts/Managers/GameManager.cs#L249-L276)
 
 ### **3. 다형성 기반의 이상 현상 시스템**
+
+
+https://github.com/user-attachments/assets/4fdde259-ae44-4a8a-8c78-9ef99d6194b1
+
 
 - **추상화:** `AbnormalData` 라는 추상 클래스를 설계하여 모든 이상 현상의 공통 동작 `ApplyAbnormal` 을 정의했습니다.
 - **구체화**: 생성(`Create`), 삭제(`Delete`), 교체(`Replace`), 크기 변형(`Scale`), 사운드 변조(`Sound`), NPC 변형(`NPCTransform`) 등 각기 다른 로직을 자식 클래스에서 독립적으로 구현했습니다.
@@ -89,6 +97,15 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 ## 📈 최적화 & 사용자 경험
 
 - **가비지 컬렉션(GC) 최소화**: `FloorNumberDisplay`에서 객체 풀링 기법을 적용해 런타임 중 숫자 오브젝트 생성/파괴 비용을 줄였습니다.
+
+
+https://github.com/user-attachments/assets/ae7a4943-9bc3-466a-b5fc-7c78a4ebda26
+
+
+
+https://github.com/user-attachments/assets/04e53817-e7cf-4c32-b95b-e62722914501
+
+
 https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Enviroment/FloorNumberDisplay.cs#L55-L63
 - [🔗 **FloorNumberDisplay.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Enviroment/FloorNumberDisplay.cs#)
 - **코루틴 안정성**: `ObjectScaler`에서 새로운 스케일링 명령이 들어올 때 기존 코루틴을 중지(`StopAllCoroutines`)하여 로직 충돌을 방지하고 예측 가능한 동작을 보장했습니다.
@@ -137,6 +154,10 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6a
 ### 3. 2차 해결 — 블렌드셰이프 기반 단일 모델 (성공)
 
 **발상 전환**: 모델을 *교체*하는 대신, **하나의 모델**이 표정만 바꾸도록 하면 리타게팅 불일치가 원천적으로 사라진다고 판단했습니다.
+
+
+https://github.com/user-attachments/assets/30ba07a0-1aa1-4417-9cdb-12219172b8ce
+
 
 - **모델 제작**: Blender에서 기본 표정 모델의 얼굴 버텍스를 직접 편집해 `Smile` 블렌드셰이프를 조각. 완전한 Mixamo 스켈레톤을 가진 모델을 베이스로 사용해 리깅 일관성 확보
 - **런타임 제어**: `SkinnedMeshRenderer.SetBlendShapeWeight()`로 표정 가중치를 조절
