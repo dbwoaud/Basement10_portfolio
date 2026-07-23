@@ -197,7 +197,7 @@ public class GameManager : Singleton<GameManager>
         if (playerFootstep != null)
             playerFootstep.SetAbnormalStatus(false, false);  
 
-        NPCMovement npc = FindFirstObjectByType<NPCMovement>();
+        NPCMovement npc = FindAnyObjectByType<NPCMovement>();
         if (npc != null)
         {
             FootstepController npcFootstep = npc.GetComponent<FootstepController>();

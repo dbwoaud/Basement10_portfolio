@@ -17,15 +17,11 @@ public class SoundManager : Singleton<SoundManager>
     [SerializeField] private AudioClip eyeOpeningBGM;
     [SerializeField] private AudioClip trueEndingBGM;
     [SerializeField] private AudioClip endingCreditBGM;
-    [SerializeField] private List<AudioClip> monologueAudioList; 
-    [SerializeField] private List<AudioClip> loopResetAudioList;
 
     public AudioClip BadEndingBGM => badEndingBGM;
     public AudioClip EyeOpeningBGM => eyeOpeningBGM;
     public AudioClip TrueEndingBGM => trueEndingBGM;
     public AudioClip EndingCreditBGM => endingCreditBGM;
-    public List<AudioClip> MonologueAudioList => monologueAudioList;
-    public List<AudioClip> LoopResetAudioList => loopResetAudioList;
 
     public void PlayBGM(AudioClip audioClip, float volume = 1.0f) // 배경음악 재생 함수
     {

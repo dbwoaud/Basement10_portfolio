@@ -30,8 +30,8 @@ public class BadEndingManager : MonoBehaviour
 
         yield return new WaitForEndOfFrame();
 
-        PlayerMovement player = FindFirstObjectByType<PlayerMovement>();
-        NPCMovement npc = FindFirstObjectByType<NPCMovement>();
+        PlayerMovement player = FindAnyObjectByType<PlayerMovement>();
+        NPCMovement npc = FindAnyObjectByType<NPCMovement>();
 
         if (player != null) 
             player.canMove = false;

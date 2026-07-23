@@ -11,7 +11,7 @@ public class MainMenuManager : MonoBehaviour
     private void Awake()
     {
         if (rideEffect == null)
-            rideEffect = FindFirstObjectByType<ElevatorRideEffect>();
+            rideEffect = FindAnyObjectByType<ElevatorRideEffect>();
     }
 
     private void Start()

@@ -44,7 +44,7 @@ public class StoryModeUIManager : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        playerMovement = FindFirstObjectByType<PlayerMovement>();
+        playerMovement = FindAnyObjectByType<PlayerMovement>();
     }
 
     private void OnEnable()
@@ -112,11 +112,7 @@ public class StoryModeUIManager : MonoBehaviour
         if (index >= 0 && index < monologueList.Count)
         {
             if(SoundManager.instance != null)
-            {
-                AudioClip clip = (index < SoundManager.instance.MonologueAudioList.Count) ? SoundManager.instance.MonologueAudioList[index] : null;
-                ShowMonologue(monologueList[index], clip);
-            }
-
+                ShowMonologue(monologueList[index]);
         }
     }
 
@@ -125,36 +121,28 @@ public class StoryModeUIManager : MonoBehaviour
         if (loopResetList.Count > 0)
         {
             int randomIndex = Random.Range(0, loopResetList.Count);
-            AudioClip clip = (randomIndex < SoundManager.instance.LoopResetAudioList.Count) ? SoundManager.instance.LoopResetAudioList[randomIndex] : null;
-            ShowMonologue(loopResetList[randomIndex], clip);
+            ShowMonologue(loopResetList[randomIndex]);
         }
     }
 
-    private void ShowMonologue(string content, AudioClip clip) // 독백을 출력하는 함수
+    private void ShowMonologue(string content) // 독백을 출력하는 함수
     {
         if (currentMonologueCoroutine != null) 
             StopCoroutine(currentMonologueCoroutine);
 
-        if (SoundManager.instance != null) 
-            SoundManager.instance.StopVoice();
-
-        currentMonologueCoroutine = StartCoroutine(TypeMonologue(content, clip));
+        currentMonologueCoroutine = StartCoroutine(TypeMonologue(content));
     }
 
-    private IEnumerator TypeMonologue(string content, AudioClip clip) // 독백을 출력하는 코루틴
+    private IEnumerator TypeMonologue(string content) // 독백을 출력하는 코루틴
     {
         monologueText.text = "";
         monologueText.gameObject.SetActive(true);
-        if (clip != null && SoundManager.instance != null) 
-            SoundManager.instance.PlayVoice(clip, 0.5f);
-
         foreach (char letter in content.ToCharArray())
         {
             monologueText.text += letter;
             yield return new WaitForSecondsRealtime(letter == '\n' ? 0.2f : 0.05f);
         }
-        float waitTime = (clip != null) ? Mathf.Max(3.0f, clip.length) : 3.0f;
-        yield return new WaitForSecondsRealtime(waitTime);
+        yield return new WaitForSecondsRealtime(2.0f);
         monologueText.gameObject.SetActive(false);
         currentMonologueCoroutine = null;
     }

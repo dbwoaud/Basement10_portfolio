@@ -7,6 +7,7 @@ public class MainMenuUIManager : MonoBehaviour
 
     [Header("UI 연결")]
     [SerializeField] private GameObject descriptionPanel;
+    [SerializeField] private SettingPanel settingPanel;
 
     [Header("로직 매니저 연결")]
     [SerializeField] private MainMenuManager mainMenuManager;
@@ -36,6 +37,9 @@ public class MainMenuUIManager : MonoBehaviour
 
         if (descriptionPanel != null) 
             descriptionPanel.SetActive(false);
+
+        if (settingPanel != null)
+            settingPanel.Close();
     }
 
     private void AutoBindUI() // UI 자동화 함수
@@ -44,17 +48,19 @@ public class MainMenuUIManager : MonoBehaviour
             raycaster = GetComponent<GraphicRaycaster>();
        
         if (mainMenuManager == null)
-            mainMenuManager = FindFirstObjectByType<MainMenuManager>();
+            mainMenuManager = FindAnyObjectByType<MainMenuManager>();
 
         Transform[] allChildren = GetComponentsInChildren<Transform>(true);
         foreach (Transform child in allChildren)
         {
-            if (child.name == "DescriptionPanel")
-            {
+            if (descriptionPanel == null && child.name == "DescriptionPanel")
                 descriptionPanel = child.gameObject;
-                break;
-            }
+            else if (settingPanel == null && child.name == "SettingPanel")
+                settingPanel = child.GetComponent<SettingPanel>();
         }
+
+        if (settingPanel == null)
+            settingPanel = GetComponentInChildren<SettingPanel>(true);
 
         Button[] buttons = GetComponentsInChildren<Button>(true);
         foreach (Button button in buttons)
@@ -63,7 +69,8 @@ public class MainMenuUIManager : MonoBehaviour
             {
                 case "StartButton": button.onClick.AddListener(OnClickStart); break;
                 case "DescriptionButton": button.onClick.AddListener(OnClickDescription); break;
-                case "XButton": button.onClick.AddListener(OnClickCloseDescription); break;
+                case "SettingButton": button.onClick.AddListener(OnClickSetting); break;
+                case "CloseDescriptionButton": button.onClick.AddListener(OnClickCloseDescription); break;
                 case "ExitButton": button.onClick.AddListener(OnClickExit); break;
             }
         }
@@ -89,8 +96,6 @@ public class MainMenuUIManager : MonoBehaviour
             SetUIInteractable(false);
             mainMenuManager.StartGameSequence();
         }
-
-
     }
 
     public void OnClickDescription() // 설명 버튼 클릭 시 실행되는 함수
@@ -103,6 +108,18 @@ public class MainMenuUIManager : MonoBehaviour
 
         if (descriptionPanel != null) 
             descriptionPanel.SetActive(true);
+    }
+
+    public void OnClickSetting() // 설정 버튼 클릭 시 실행되는 함수
+    {
+        if (isProcessing)
+            return;
+
+        if (SoundManager.instance != null)
+            SoundManager.instance.PlayButtonSound();
+
+        if (settingPanel != null)
+            settingPanel.Open();
     }
 
     public void OnClickCloseDescription() // 설명 패널의 닫기 버튼 클릭 시 실행되는 함수
@@ -125,6 +142,10 @@ public class MainMenuUIManager : MonoBehaviour
         if (SoundManager.instance != null)
             SoundManager.instance.PlayButtonSound();
 
-        Application.Quit();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+    Application.Quit();
+#endif
     }
 }

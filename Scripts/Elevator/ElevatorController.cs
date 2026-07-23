@@ -36,7 +36,7 @@ public class ElevatorController : MonoBehaviour
 
     private void Start()
     {
-        playerMovement = FindFirstObjectByType<PlayerMovement>();
+        playerMovement = FindAnyObjectByType<PlayerMovement>();
         if (playerMovement != null)
         {
             playerTransform = playerMovement.transform;
@@ -108,7 +108,7 @@ public class ElevatorController : MonoBehaviour
         if (SoundManager.instance != null)
             SoundManager.instance.StopAllSound();
 
-        FootstepController[] allFootsteps = FindObjectsByType<FootstepController>(FindObjectsSortMode.None);
+        FootstepController[] allFootsteps = FindObjectsByType<FootstepController>();
         foreach (var fc in allFootsteps)
             fc.StopFootsteps();
 

@@ -20,7 +20,7 @@ public class SoundAbnormalData : AbnormalData
 
         if (targetType == TargetType.Player)
         {
-            PlayerMovement player = FindFirstObjectByType<PlayerMovement>();
+            PlayerMovement player = FindAnyObjectByType<PlayerMovement>();
             if (player != null)
             {
                 FootstepController fc = player.GetComponent<FootstepController>();
@@ -31,7 +31,7 @@ public class SoundAbnormalData : AbnormalData
 
         else 
         {
-            NPCMovement npc = FindFirstObjectByType<NPCMovement>();
+            NPCMovement npc = FindAnyObjectByType<NPCMovement>();
             if (npc != null)
             {
                 FootstepController fc = npc.GetComponent<FootstepController>();

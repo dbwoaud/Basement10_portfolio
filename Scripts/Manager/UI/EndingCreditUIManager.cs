@@ -173,7 +173,7 @@ public class EndingCreditUIManager : MonoBehaviour
 
     private void FinishCredits() // 크레딧 연출을 끝내는 함수
     {
-        EndingCreditManager manager = FindFirstObjectByType<EndingCreditManager>();
+        EndingCreditManager manager = FindAnyObjectByType<EndingCreditManager>();
         if (manager != null) 
             manager.GoToMainMenu();
     }
