@@ -14,10 +14,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Vector3 verticalVelocity;
     public bool canMove = true;
 
-    [Header("시야 설정")]
-    [SerializeField] private Transform cameraPivot;
-    [SerializeField] private float verticalClamp = 80f;
-    [SerializeField] private float verticalLookRotation;
 
     private void Awake()
     {
@@ -26,6 +22,11 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (!canMove)
+        {
+            verticalVelocity.y = -2f;
+            return;
+        }
         ApplyGravity();
     }
 
@@ -36,12 +37,9 @@ public class PlayerMovement : MonoBehaviour
 
         if(footstepController == null)
             footstepController = GetComponent<FootstepController>();
-
-        if (cameraPivot == null && Camera.main != null)
-            cameraPivot = Camera.main.transform;
     }
 
-    public void Move(Vector3 moveInput, bool isRunning) // 플레이어 이동을 다루는 함수
+    public void Move(Vector3 moveInput, bool isRunning) // 플레이어의 이동을 설정하는 함수
     {
         if (!canMove || characterController == null)
             return;
@@ -54,17 +52,6 @@ public class PlayerMovement : MonoBehaviour
         bool isMoving = characterController.isGrounded && moveInput.magnitude > 0f;
         float speedRatio = currentSpeed / walkSpeed;
         footstepController.CalculateAndPlayFootstep(isMoving, speedRatio);
-    }
-
-    public void Look(float mouseX, float mouseY) // 플레이어 시야를 다루는 함수
-    {
-        if (!canMove || cameraPivot == null)
-            return;
-
-        transform.Rotate(Vector3.up * mouseX);
-        verticalLookRotation -= mouseY;
-        verticalLookRotation = Mathf.Clamp(verticalLookRotation, -verticalClamp, verticalClamp);
-        cameraPivot.localRotation = Quaternion.Euler(verticalLookRotation, 0f, 0f);
     }
 
     private void ApplyGravity() // 플레이어에게 중력을 적용하는 함수

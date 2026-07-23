@@ -23,33 +23,33 @@ public class TrueEndingManager : MonoBehaviour
 
     private IEnumerator TrueEndingSequenceCoroutine() // 진엔딩 시퀀스를 재생하는 코루틴
     {
-        if (SoundManager.instance != null)
-            SoundManager.instance.PlayBGM(SoundManager.instance.EyeOpeningBGM);
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayBGM(SoundManager.Instance.EyeOpeningBGM);
 
-        if (FadeManager.instance != null)
+        if (FadeManager.Instance != null)
         {
-            FadeManager.instance.SetWhiteBackGround(true);
+            FadeManager.Instance.SetWhiteBackGround(true);
 
-            FadeManager.instance.FlashOut(endingWaitTime);
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
+            FadeManager.Instance.FlashOut(endingWaitTime);
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
 
             yield return new WaitForSeconds(endingWaitTime);
 
-            FadeManager.instance.FlashIn(endingWaitTime);
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
+            FadeManager.Instance.FlashIn(endingWaitTime);
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
         }
     }
 
     private void SetMonologueSequence() // 독백 출력을 위한 설정을 진행하는 함수
     {
-        if (SoundManager.instance != null)
+        if (SoundManager.Instance != null)
         {
-            SoundManager.instance.StopAllSound();
-            SoundManager.instance.PlayBGM(SoundManager.instance.TrueEndingBGM, 0.8f);
+            SoundManager.Instance.StopAllSound();
+            SoundManager.Instance.PlayBGM(SoundManager.Instance.TrueEndingBGM, 0.8f);
         }
 
-        if (FadeManager.instance != null)
-            FadeManager.instance.SetWhiteBackGround(false);
+        if (FadeManager.Instance != null)
+            FadeManager.Instance.SetWhiteBackGround(false);
     }
 
     private IEnumerator PlayMonologueCoroutine() // 독백을 재생하는 코루틴
@@ -60,12 +60,12 @@ public class TrueEndingManager : MonoBehaviour
 
     private IEnumerator TransitionToNextSceneCoroutine() // 다음 씬으로 이동을 준비하는 코루틴
     {
-        if (FadeManager.instance != null)
+        if (FadeManager.Instance != null)
         {
-            FadeManager.instance.SetAllBackground(false);
-            FadeManager.instance.SetBlackBackGround(true);
-            FadeManager.instance.FadeIn(5.0f);
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
+            FadeManager.Instance.SetAllBackground(false);
+            FadeManager.Instance.SetBlackBackGround(true);
+            FadeManager.Instance.FadeIn(5.0f);
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
         }
 
         SceneManager.LoadScene(nextSceneName);

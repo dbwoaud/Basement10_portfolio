@@ -1,6 +1,6 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(FootstepController))]
@@ -62,23 +62,25 @@ public class NPCMovement : MonoBehaviour
 
     private void CheckWayPointArrival() // NPC가 체크포인트에 도달했는지 확인하는 함수
     {
-        if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance + 0.05f)
+        if (navMeshAgent.pathPending)
+            return;
+
+        if (navMeshAgent.remainingDistance > navMeshAgent.stoppingDistance + 0.05f)
+            return;
+
+        if (currentWaypoint >= waypoints.Length - 1)
         {
-            if (currentWaypoint >= waypoints.Length - 1)
-            {
-                opening = true;
-                navMeshAgent.isStopped = true;
-                UpdateAnimator();
-            }
-            else
-            {
-                currentWaypoint++;
-                SetDestinationToCurrentWaypoint();
-            }
+            opening = true;
+            navMeshAgent.isStopped = true;
+            UpdateAnimator();
+            return;
         }
+
+        currentWaypoint++;
+        SetDestinationToCurrentWaypoint();
     }
 
-    private void SetDestinationToCurrentWaypoint() // NPC의 목적지를 설정하는 함수
+    private void SetDestinationToCurrentWaypoint() // NPC의 NavMeshAgent 목적지를 설정하는 함수
     {
         navMeshAgent.updatePosition = true;
         navMeshAgent.updateRotation = true;
@@ -87,21 +89,14 @@ public class NPCMovement : MonoBehaviour
 
     private void HandleFootsteps() // NPC의 발자국 소리를 설정하는 함수
     {
-        if (isMuted)
-        {
-            footstepController.CalculateAndPlayFootstep(false, 1f);
-            return;
-        }
-
         bool isMoving = navMeshAgent.velocity.magnitude > 0.1f && !navMeshAgent.isStopped;
-        float currentSpeedRatio = isDoubleSound ? 2f : 1f;
-        footstepController.CalculateAndPlayFootstep(isMoving, currentSpeedRatio);
+        footstepController.CalculateAndPlayFootstep(isMoving);
     }
 
     public void SetAbnormalStatus(bool mute, bool doubleSound) // NPC의 이상 현상을 설정하는 함수
     {
-        this.isMuted = mute;
-        this.isDoubleSound = doubleSound;
+        isMuted = mute;
+        isDoubleSound = doubleSound;
     }
 
     private void UpdateAnimator() // 다음 애니메이션을 재생하도록 변수를 설정하는 함수
@@ -119,22 +114,23 @@ public class NPCMovement : MonoBehaviour
     {
         Vector3 dir = (targetPos - transform.position).normalized;
         dir.y = 0f;
-        if (dir != Vector3.zero)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(dir);
-            float rotationSpeed = 2.0f;
-            while (Quaternion.Angle(transform.rotation, targetRotation) > 0.1f)
-            {
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
-                yield return null; 
-            }
 
-            transform.rotation = targetRotation;
+        if (dir == Vector3.zero)
+            yield break;
+
+        Quaternion targetRotation = Quaternion.LookRotation(dir);
+        float rotationSpeed = 2.0f;
+        while (Quaternion.Angle(transform.rotation, targetRotation) > 0.1f)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+            yield return null; 
         }
+
+        transform.rotation = targetRotation;
     }
 
-    public void UpdateAnimator(Animator newAnimator)
+    public void UpdateAnimator(Animator newAnimator) // 애니메이터를 설정하는 함수
     {
-        this.animator = newAnimator;
+        animator = newAnimator;
     }
 }

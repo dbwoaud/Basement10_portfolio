@@ -22,10 +22,10 @@ public class BadEndingManager : MonoBehaviour
 
     IEnumerator BadEndingSequenceCoroutine() // 배드 엔딩 시퀀스를 재생하는 코루틴
     {
-        if (GameManager.instance != null)
+        if (GameManager.Instance != null)
         {
-            GameManager.instance.showFloorNumber = false;
-            GameManager.instance.StartLoop();
+            GameManager.Instance.showFloorNumber = false;
+            GameManager.Instance.StartLoop();
         }
 
         yield return new WaitForEndOfFrame();
@@ -47,8 +47,8 @@ public class BadEndingManager : MonoBehaviour
 
             yield return new WaitUntil(() => npc.opening);
 
-            if(GameManager.instance != null && GameManager.instance.player)
-                npc.LookAtTarget(GameManager.instance.player.transform.position);
+            if(GameManager.Instance != null && GameManager.Instance.player)
+                npc.LookAtTarget(GameManager.Instance.player.transform.position);
         }
 
         yield return new WaitForSeconds(transferTime);
@@ -56,15 +56,15 @@ public class BadEndingManager : MonoBehaviour
 
     private IEnumerator PlayFadeAndAudioCoroutine() // 페이드 효과와 오디오를 설정하는 코루틴
     {
-        if (FadeManager.instance != null)
+        if (FadeManager.Instance != null)
         {
-            FadeManager.instance.FadeIn(3.0f);
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
-            FadeManager.instance.SetBlackBackGround(false);
+            FadeManager.Instance.FadeIn(3.0f);
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
+            FadeManager.Instance.SetBlackBackGround(false);
         }
 
-        if (SoundManager.instance != null)
-            SoundManager.instance.PlayBGM(SoundManager.instance.BadEndingBGM, 0.8f);
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayBGM(SoundManager.Instance.BadEndingBGM, 0.8f);
     }
 
     private IEnumerator PlayMonologueCoroutine() // 독백을 재생하는 코루틴
@@ -75,12 +75,12 @@ public class BadEndingManager : MonoBehaviour
 
     private IEnumerator TransitionToNextSceneCoroutine() // 다음 씬으로 이동을 준비하는 코루틴
     {
-        if (FadeManager.instance != null)
+        if (FadeManager.Instance != null)
         {
-            FadeManager.instance.SetAllBackground(false);
-            FadeManager.instance.SetWhiteBackGround(true);
-            FadeManager.instance.FlashIn(transferTime);
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
+            FadeManager.Instance.SetAllBackground(false);
+            FadeManager.Instance.SetWhiteBackGround(true);
+            FadeManager.Instance.FlashIn(transferTime);
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
         }
         SceneManager.LoadScene(nextSceneName);
     }

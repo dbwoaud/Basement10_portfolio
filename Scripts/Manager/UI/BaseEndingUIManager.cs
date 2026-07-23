@@ -1,42 +1,49 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class BaseEndingUIManager<T> : MonoBehaviour where T : MonoBehaviour
+public abstract class BaseEndingUIManager<T> : BaseUIManager<T> where T : BaseEndingUIManager<T>
 {
-    public static T instance;
-
     [Header("엔딩 공통 UI")]
-    protected GameObject endingPanel;
-    protected Text endingTextUI;
-    [SerializeField, TextArea(3, 10)] protected List<string> monologueList;
-    [SerializeField] private float monologueDisplayDuration = 4.0f;
+    [SerializeField] protected GameObject endingPanel;
+    [SerializeField] protected TypewriterText typewriter;
 
-    protected virtual void Awake()
+    [Tooltip("출력할 독백의 Story 테이블 키를 순서대로 넣는다.")]
+    [SerializeField] protected string[] monologueKeys;
+
+    [SerializeField] private float lineGapDuration = 1.0f;
+
+    protected abstract string EndingPanelName { get; }
+
+    protected override void AutoBindUI()
     {
-        if (instance == null) 
-            instance = this as T;
-        else 
-        { 
-            Destroy(gameObject); 
-            return; 
-        }
+        if (endingPanel == null)
+            endingPanel = UIBinder.FindObject(transform, EndingPanelName);
 
-        AutoBindUI();
+        if (typewriter != null || endingPanel == null)
+            return;
+
+        Text text = endingPanel.GetComponentInChildren<Text>(true);
+
+        if (text == null)
+            return;
+
+        typewriter = text.GetComponent<TypewriterText>();
+
+        if (typewriter == null)
+            typewriter = text.gameObject.AddComponent<TypewriterText>();
     }
 
-    protected virtual void Start()
+    protected override void InitializeUI()
     {
-        if (endingPanel != null) 
+        if (endingPanel != null)
             endingPanel.SetActive(false);
-        if (endingTextUI != null) 
-            endingTextUI.text = "";
+
+        if (typewriter != null)
+            typewriter.Clear();
     }
 
-    protected abstract void AutoBindUI(); // UI 자동화 함수
-
-    public IEnumerator PlayMonologueSequence() // 독백을 출력하는 코루틴
+    public IEnumerator PlayMonologueSequence()
     {
         if (endingPanel != null)
         {
@@ -45,29 +52,20 @@ public abstract class BaseEndingUIManager<T> : MonoBehaviour where T : MonoBehav
             Cursor.visible = true;
         }
 
-        if (endingTextUI == null) 
+        if (typewriter == null || monologueKeys == null)
             yield break;
 
-        foreach (string line in monologueList)
+        foreach (string key in monologueKeys)
         {
-            yield return StartCoroutine(TypeTextCoroutine(line));
-            yield return new WaitForSecondsRealtime(monologueDisplayDuration);
-            endingTextUI.text = "";
-            yield return new WaitForSecondsRealtime(1.0f);
+            if (string.IsNullOrEmpty(key))
+                continue;
+
+            yield return typewriter.Play(Loc.Story(key));
+            yield return new WaitForSecondsRealtime(lineGapDuration);
         }
 
         OnMonologueFinished();
     }
 
-    private IEnumerator TypeTextCoroutine(string content, float speed = 0.05f) // 텍스트를 타이핑하는 코루틴
-    {
-        endingTextUI.text = "";
-        foreach (char letter in content.ToCharArray())
-        {
-            endingTextUI.text += letter;
-            yield return new WaitForSecondsRealtime(speed);
-        }
-    }
-
-    protected abstract void OnMonologueFinished(); // 독백을 종료시키는 함수
+    protected abstract void OnMonologueFinished();
 }

@@ -18,13 +18,13 @@ public class TrueEndingUIManager : BaseEndingUIManager<TrueEndingUIManager>
 
     protected override void OnMonologueFinished()
     {
-        if (SoundManager.instance != null)
-            SoundManager.instance.StopAllSound();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.StopAllSound();
 
-        if (FadeManager.instance != null)
+        if (FadeManager.Instance != null)
         {
-            FadeManager.instance.SetBlackBackGround(true);
-            FadeManager.instance.FadeIn(3.0f);
+            FadeManager.Instance.SetBlackBackGround(true);
+            FadeManager.Instance.FadeIn(3.0f);
 
         }
     }

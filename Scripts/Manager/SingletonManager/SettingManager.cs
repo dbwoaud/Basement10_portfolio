@@ -2,9 +2,8 @@ using System;
 using System.IO;
 using UnityEngine;
 
-public class SettingManager : MonoBehaviour
+public class SettingManager : Singleton<SettingManager>
 {
-    public static SettingManager instance;
     public static event Action<GameSetting> OnSettingsApplied;
 
     public GameSetting Current { get; private set; }
@@ -15,47 +14,52 @@ public class SettingManager : MonoBehaviour
 
     private static string SavePath => Path.Combine(Application.persistentDataPath, FileName);
 
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void Bootstrap()
+    private static void Bootstrap() // 초기 설정을 수행하는 함수
     {
-        if (instance != null) 
+        if (HasInstance)
             return;
 
-        GameObject go = new GameObject("[SettingsManager]");
-        go.AddComponent<SettingManager>();
+        new GameObject("[SettingManager]").AddComponent<SettingManager>();
     }
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (instance != null && instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        base.Awake();
 
-        instance = this;
-        DontDestroyOnLoad(gameObject);
+        if (Instance != this)
+            return;
+
         Load();
     }
 
-
-    public void Load()
+    private void Start()
     {
-        Current = ReadFromDisk() ?? new GameSetting();
+        OnSettingsApplied?.Invoke(Current);
+    }
+
+    public void Load() // 설정 정보를 불러오는 함수
+    {
+        Current = ReadFromDisk() ?? GameSetting.CreateDefault();
         Current.Validate();
     }
 
-    private GameSetting ReadFromDisk()
+    private GameSetting ReadFromDisk() // 디스크에서 설정 정보를 불러오는 함수
     {
-        if (!File.Exists(SavePath)) return null;
+        if (!File.Exists(SavePath))
+            return null;
 
         try
         {
             string json = File.ReadAllText(SavePath);
-            if (string.IsNullOrWhiteSpace(json)) return null;
+
+            if (string.IsNullOrWhiteSpace(json))
+                return null;
 
             GameSetting loaded = JsonUtility.FromJson<GameSetting>(json);
-            if (loaded == null) 
+
+            if (loaded == null)
                 return null;
 
             return Migrate(loaded);
@@ -63,69 +67,130 @@ public class SettingManager : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogWarning($"[설정] 파일을 읽지 못해 기본값으로 시작합니다. ({e.Message})");
-            BackupBrokenFile();
+            QuarantineBrokenFile();
             return null;
         }
     }
 
-    private GameSetting Migrate(GameSetting loaded)
+    private GameSetting Migrate(GameSetting loaded) // 설정 버전을 업데이트하는 함수
     {
-        if (loaded.version == GameSetting.CurrentVersion) return loaded;
+        if (loaded.version == GameSetting.CurrentVersion)
+            return loaded;
 
-        Debug.Log($"[설정] 저장 버전 {loaded.version} → {GameSetting.CurrentVersion} 변환");
-        loaded.version = GameSetting.CurrentVersion;
+        if (loaded.version > GameSetting.CurrentVersion)
+        {
+            Debug.LogWarning("[설정] 더 최신 버전의 파일입니다. 기본값으로 시작합니다.");
+            return null;
+        }
+
+        int guard = 0;
+
+        while (loaded.version < GameSetting.CurrentVersion)
+        {
+            int before = loaded.version;
+
+            switch (loaded.version)
+            {
+                case 1:
+                    loaded.resolutionIndex = -1;
+                    loaded.displayModeIndex = ToDisplayModeIndex(Screen.fullScreenMode);
+                    loaded.language = GameLanguageExtensions.FromSystemLanguage(Application.systemLanguage);
+                    loaded.version = 2;
+                    break;
+
+                default:
+                    Debug.LogWarning($"[설정] 버전 {loaded.version} 변환 경로가 없어 기본값으로 초기화합니다.");
+                    return null;
+            }
+
+            Debug.Log($"[설정] 저장 버전 {before} → {loaded.version} 변환");
+
+            if (++guard > 16)
+            {
+                Debug.LogError("[설정] 마이그레이션이 종료되지 않아 중단합니다.");
+                return null;
+            }
+        }
+
         return loaded;
     }
 
-    private void BackupBrokenFile()
+    private static int ToDisplayModeIndex(FullScreenMode mode) // 화면 모드 설정 인덱스를 반환하는 함수
+    {
+        for (int i = 0; i < DisplayOptions.DisplayModes.Length; i++)
+        {
+            if (DisplayOptions.DisplayModes[i] == mode)
+                return i;
+        }
+
+        return 0;
+    }
+
+    private void QuarantineBrokenFile() // 깨진 파일을 삭제하는 함수
     {
         try
         {
-            string backup = SavePath + BackupExtension;
-            if (File.Exists(backup)) File.Delete(backup);
-            File.Move(SavePath, backup);
+            string broken = SavePath + ".broken";
+            TryDelete(broken);
+            File.Move(SavePath, broken);
         }
         catch (Exception e)
         {
-            Debug.LogWarning($"[설정] 손상 파일 백업 실패: {e.Message}");
+            Debug.LogWarning($"[설정] 손상 파일 격리 실패: {e.Message}");
         }
     }
 
-    public bool Commit(GameSetting draft)
+    public bool Commit(GameSetting draft) // 게임 설정 정보를 저장하는 함수
     {
-        if (draft == null) return false;
+        if (draft == null)
+            return false;
 
         Current = draft.Clone();
         Current.Validate();
 
         bool saved = WriteToDisk();
 
-        OnSettingsApplied?.Invoke(Current);
+        if (!saved)
+            Debug.LogWarning("[설정] 저장에 실패했지만 현재 세션에는 적용됩니다.");
 
+        OnSettingsApplied?.Invoke(Current);
         return saved;
     }
 
-    private bool WriteToDisk()
+    private bool WriteToDisk() // 설정 정보를 디스크에 저장하는 함수
     {
         string tempPath = SavePath + TempExtension;
+        string backupPath = SavePath + BackupExtension;
 
         try
         {
             File.WriteAllText(tempPath, JsonUtility.ToJson(Current, true));
 
-            if (File.Exists(SavePath)) File.Delete(SavePath);
-            File.Move(tempPath, SavePath);
+            if (File.Exists(SavePath))
+                File.Replace(tempPath, SavePath, backupPath, ignoreMetadataErrors: true);
+            else
+                File.Move(tempPath, SavePath);
 
             return true;
         }
         catch (Exception e)
         {
             Debug.LogError($"[설정] 저장에 실패했습니다: {e.Message}");
-
-            try { if (File.Exists(tempPath)) File.Delete(tempPath); }
-            catch { /* 정리 실패는 무시 */ }
-
+            TryDelete(tempPath);
             return false;
+        }
+    }
+
+    private static void TryDelete(string path) // 파일 삭제를 시도하는 함수
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch
+        {
+            // 정리 실패는 무시한다.
         }
     }
 
@@ -133,15 +198,10 @@ public class SettingManager : MonoBehaviour
     [UnityEditor.MenuItem("Tools/설정/저장 파일 삭제")]
     private static void DeleteSaveFile()
     {
-        if (File.Exists(SavePath))
-        {
-            File.Delete(SavePath);
-            Debug.Log($"[설정] 삭제 완료: {SavePath}");
-        }
-        else
-        {
-            Debug.Log("[설정] 저장 파일이 없습니다.");
-        }
+        TryDelete(SavePath);
+        TryDelete(SavePath + TempExtension);
+        TryDelete(SavePath + BackupExtension);
+        Debug.Log("[설정] 저장 파일을 삭제했습니다.");
     }
 
     [UnityEditor.MenuItem("Tools/설정/저장 폴더 열기")]

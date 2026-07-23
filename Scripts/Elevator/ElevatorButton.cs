@@ -22,8 +22,8 @@ public class ElevatorButton : MonoBehaviour
         {
             if (elevatorController != null)
             {
-                if (SoundManager.instance != null)
-                    SoundManager.instance.PlayButtonSound();
+                if (SoundManager.Instance != null)
+                    SoundManager.Instance.PlayButtonSound();
 
                 elevatorController.StartCoroutine(elevatorController.SetDoors(true));
             }

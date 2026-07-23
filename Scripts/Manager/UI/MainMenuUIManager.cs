@@ -88,8 +88,8 @@ public class MainMenuUIManager : MonoBehaviour
         if (isProcessing)
             return;
 
-        if (SoundManager.instance != null)
-            SoundManager.instance.PlayButtonSound();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayButtonSound();
 
         if (mainMenuManager != null)
         {
@@ -103,8 +103,8 @@ public class MainMenuUIManager : MonoBehaviour
         if (isProcessing)
             return;
             
-        if (SoundManager.instance != null)
-            SoundManager.instance.PlayButtonSound();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayButtonSound();
 
         if (descriptionPanel != null) 
             descriptionPanel.SetActive(true);
@@ -115,8 +115,8 @@ public class MainMenuUIManager : MonoBehaviour
         if (isProcessing)
             return;
 
-        if (SoundManager.instance != null)
-            SoundManager.instance.PlayButtonSound();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayButtonSound();
 
         if (settingPanel != null)
             settingPanel.Open();
@@ -127,8 +127,8 @@ public class MainMenuUIManager : MonoBehaviour
         if (isProcessing)
             return;
         
-        if (SoundManager.instance != null)
-            SoundManager.instance.PlayButtonSound();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayButtonSound();
 
         if (descriptionPanel != null) 
             descriptionPanel.SetActive(false);
@@ -139,8 +139,8 @@ public class MainMenuUIManager : MonoBehaviour
         if (isProcessing)
             return;
 
-        if (SoundManager.instance != null)
-            SoundManager.instance.PlayButtonSound();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayButtonSound();
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

@@ -1,85 +1,69 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class EndingCreditUIManager : MonoBehaviour
-{
-    public static EndingCreditUIManager instance;
 
-    [Header("UI 설정")]
+public class EndingCreditUIManager : BaseUIManager<EndingCreditUIManager>
+{
+    [Header("UI")]
     [SerializeField] private GameObject blackBackgroundPanel;
     [SerializeField] private Text roleText;
     [SerializeField] private Text nameText;
     [SerializeField] private Button skipButton;
 
-    [Header("텍스트 설정")]
-    [SerializeField] private List<string> roleTextList;
-    [SerializeField, TextArea()] private List<string> nameTextList;
+    [Header("크레딧 내용")]
+    [Tooltip("역할 이름의 Story 테이블 키. 예: credit.role.programming")]
+    [SerializeField] private string[] roleKeys;
 
-    [Header("연출 설정")]
+    [Tooltip("표시할 이름. 고유명사이므로 번역하지 않는다.")]
+    [SerializeField, TextArea] private string[] names;
+
+    [Header("연출")]
     [SerializeField] private float fadeDuration = 1.5f;
     [SerializeField] private float displayDuration = 4.0f;
-    [SerializeField] private Coroutine creditCoroutine;
-    [SerializeField] private bool isSkipped = false;
 
-    private void Awake()
+    private Coroutine creditRoutine;
+    private bool isSkipped;
+
+    protected override void AutoBindUI()
     {
-        if(instance == null)
-            instance = this;
+        if (blackBackgroundPanel == null)
+            blackBackgroundPanel = UIBinder.FindObject(transform, "BlackBackgroundPanel");
 
-        else
+        if (roleText == null)
+            roleText = UIBinder.Find<Text>(transform, "RoleText");
+
+        if (nameText == null)
+            nameText = UIBinder.Find<Text>(transform, "NameText");
+
+        if (skipButton == null)
+            skipButton = UIBinder.Find<Button>(transform, "SkipButton");
+
+        UIBinder.BindButtons(transform, new Dictionary<string, UnityAction>
         {
-            Destroy(gameObject);
-            return;
-        }
+            { "SkipButton", OnClickSkipButton },
+        });
 
-        AutoBindUI();
+        if (skipButton != null)
+            skipButton.interactable = true;
     }
-    private void Start()
-    {   
+
+    protected override void InitializeUI()
+    {
         SetTextAlpha(0f);
-        if (roleTextList.Count > 0 && nameTextList.Count > 0)
-            creditCoroutine = StartCoroutine(CreditSequenceCoroutine());
     }
 
-    private void AutoBindUI() // UI 자동화 함수
+    private void Start()
     {
-        Transform[] allChildren = GetComponentsInChildren<Transform>(true);
-        foreach (Transform t in allChildren)
-        {
-            if (t.name == "BlackBackgroundPanel")
-            {
-                blackBackgroundPanel = t.gameObject;
-                break;
-            }
-        }
-
-        Text[] texts = GetComponentsInChildren<Text>(true);
-        foreach (Text t in texts)
-        {
-            if (t.gameObject.name == "RoleText") 
-                roleText = t;
-            else if (t.gameObject.name == "NameText") 
-                nameText = t;
-        }
-
-        Button[] buttons = GetComponentsInChildren<Button>(true);
-        foreach (Button b in buttons)
-        {
-            if (b.gameObject.name == "SkipButton")
-            {
-                skipButton = b;
-                skipButton.interactable = true;
-                skipButton.onClick.RemoveAllListeners();
-                skipButton.onClick.AddListener(OnClickSkipButton);
-            }
-        }
+        if (roleKeys != null && roleKeys.Length > 0 && names != null && names.Length > 0)
+            creditRoutine = StartCoroutine(CreditSequenceRoutine());
     }
 
-    private IEnumerator CreditSequenceCoroutine() // 크레딧 연출을 수행하는 코루틴
+    private IEnumerator CreditSequenceRoutine()
     {
-        if(FadeManager.instance != null)
+        if (FadeManager.HasInstance)
         {
             FadeManager.instance.SetAllBackground(false);
             FadeManager.instance.SetBlackBackGround(true);
@@ -92,89 +76,86 @@ public class EndingCreditUIManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
-        int count = Mathf.Min(roleTextList.Count, nameTextList.Count);
+        int count = Mathf.Min(roleKeys.Length, names.Length);
 
         for (int i = 0; i < count; i++)
         {
-            if (isSkipped) 
+            if (isSkipped)
                 yield break;
 
-            roleText.text = roleTextList[i];
-            nameText.text = nameTextList[i];
+            if (roleText != null)
+                roleText.text = Loc.Story(roleKeys[i]);
+
+            if (nameText != null)
+                nameText.text = names[i];
+
             yield return StartCoroutine(FadeTextAlpha(0f, 1f, fadeDuration));
             yield return new WaitForSeconds(displayDuration);
             yield return StartCoroutine(FadeTextAlpha(1f, 0f, fadeDuration));
             yield return new WaitForSeconds(0.5f);
         }
 
-        if (!isSkipped) 
+        if (!isSkipped)
             FinishCredits();
     }
 
-    private IEnumerator FadeTextAlpha(float startAlpha, float targetAlpha, float duration) // 글자 투명도를 조절하는 코루틴
+    private IEnumerator FadeTextAlpha(float startAlpha, float targetAlpha, float duration)
     {
         float elapsed = 0f;
-        Color roleColor = roleText.color;
-        Color nameColor = nameText.color;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsed / duration);
-            roleColor.a = alpha;
-            nameColor.a = alpha;
-            roleText.color = roleColor;
-            nameText.color = nameColor;
+            SetTextAlpha(Mathf.Lerp(startAlpha, targetAlpha, elapsed / duration));
             yield return null;
         }
 
-        roleColor.a = targetAlpha;
-        nameColor.a = targetAlpha;
-        roleText.color = roleColor;
-        nameText.color = nameColor;
+        SetTextAlpha(targetAlpha);
     }
 
-    private void SetTextAlpha(float alpha) // 텍스트 알파 값을 설정하는 함수
+    private void SetTextAlpha(float alpha)
     {
-        if (roleText != null) 
-        { 
-            Color c = roleText.color; 
-            c.a = alpha; 
-            roleText.color = c; 
-        }
-
-        if (nameText != null) 
-        { 
-            Color c = nameText.color; 
-            c.a = alpha; 
-            nameText.color = c; 
-        }
+        ApplyAlpha(roleText, alpha);
+        ApplyAlpha(nameText, alpha);
     }
 
-    public void OnClickSkipButton() // 스킵 버튼 클릭 시 실행되는 함수
+    private static void ApplyAlpha(Text text, float alpha)
     {
-        if (isSkipped) 
+        if (text == null)
             return;
-        
+
+        Color color = text.color;
+        color.a = alpha;
+        text.color = color;
+    }
+
+    public void OnClickSkipButton()
+    {
+        if (isSkipped)
+            return;
+
         isSkipped = true;
-        if (SoundManager.instance != null)
+
+        if (SoundManager.HasInstance)
         {
             SoundManager.instance.StopAllSound();
             SoundManager.instance.PlayButtonSound();
         }
 
-        skipButton.interactable = false;
+        if (skipButton != null)
+            skipButton.interactable = false;
 
-        if (creditCoroutine != null) 
-            StopCoroutine(creditCoroutine);
+        if (creditRoutine != null)
+            StopCoroutine(creditRoutine);
 
         FinishCredits();
     }
 
-    private void FinishCredits() // 크레딧 연출을 끝내는 함수
+    private void FinishCredits()
     {
         EndingCreditManager manager = FindAnyObjectByType<EndingCreditManager>();
-        if (manager != null) 
+
+        if (manager != null)
             manager.GoToMainMenu();
     }
 }

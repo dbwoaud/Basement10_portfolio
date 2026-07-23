@@ -13,8 +13,8 @@ public class EndingCreditManager : MonoBehaviour
 
     private void Start()
     {
-        if (SoundManager.instance != null && SoundManager.instance.EndingCreditBGM != null)
-            SoundManager.instance.PlayBGM(SoundManager.instance.EndingCreditBGM, 0.8f);
+        if (SoundManager.Instance != null && SoundManager.Instance.EndingCreditBGM != null)
+            SoundManager.Instance.PlayBGM(SoundManager.Instance.EndingCreditBGM, 0.8f);
     }
 
     public void GoToMainMenu() // 메인메뉴로 이동하는 함수
@@ -28,11 +28,11 @@ public class EndingCreditManager : MonoBehaviour
 
     private IEnumerator ReturnToMainMenuCoroutine() // 메인메뉴로 이동하는 코루틴
     {
-        if (FadeManager.instance != null)
+        if (FadeManager.Instance != null)
         {
-            FadeManager.instance.SetBlackBackGround(true);
-            FadeManager.instance.FadeIn(5.0f);
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
+            FadeManager.Instance.SetBlackBackGround(true);
+            FadeManager.Instance.FadeIn(5.0f);
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
         }
 
         yield return new WaitForSeconds(transferDuration);

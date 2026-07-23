@@ -3,9 +3,9 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMovement))]
 public class PlayerInput : MonoBehaviour
 {
-    [Header("플레이어 이동 및 시야 설정")]
-    [SerializeField] private float mouseSensitivity = 3f;
+    [Header("이동 설정")]
     [SerializeField] private PlayerMovement playerMovement;
+
 
     private void Awake()
     {
@@ -14,8 +14,10 @@ public class PlayerInput : MonoBehaviour
 
     void Update()
     {
+        if (Time.timeScale <= 0f)
+            return;
+
         HandleMovementInput();
-        HandleLookInput();
     }
 
     void InitializeComponents() // 컴포넌트 초기화 함수
@@ -35,12 +37,5 @@ public class PlayerInput : MonoBehaviour
 
         Vector3 moveInput = new Vector3(moveX, 0f, moveZ);
         playerMovement.Move(moveInput, isRunning);
-    }
-
-    private void HandleLookInput() // 시야 관련 입력을 다루는 함수
-    {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
-        playerMovement.Look(mouseX, mouseY);
     }
 }

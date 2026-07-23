@@ -105,17 +105,17 @@ public class ElevatorController : MonoBehaviour
         yield return doorCoroutine;
    
 
-        if (SoundManager.instance != null)
-            SoundManager.instance.StopAllSound();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.StopAllSound();
 
         FootstepController[] allFootsteps = FindObjectsByType<FootstepController>();
         foreach (var fc in allFootsteps)
             fc.StopFootsteps();
 
-        if (FadeManager.instance != null)
+        if (FadeManager.Instance != null)
         { 
-            FadeManager.instance.FadeIn();
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
+            FadeManager.Instance.FadeIn();
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
         }
 
         yield return new WaitForSeconds(transferDelay);
@@ -184,7 +184,7 @@ public class ElevatorController : MonoBehaviour
 
     private void PlayDoorSound() // 엘리베이터 문 효과음을 재생하는 함수
     {
-        if (SoundManager.instance != null)
-            SoundManager.instance.PlayElevatorDoorSound();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayElevatorDoorSound();
     }
 }

@@ -1,43 +1,91 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class StoryModeUIManager : MonoBehaviour
+public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
 {
-    public static StoryModeUIManager instance;
-
-    [Header("UI 설정")]
+    [Header("UI")]
     [SerializeField] private Text elevatorText;
     [SerializeField] private GameObject menuUI;
-    [SerializeField] private bool menuActivated;
+    [SerializeField] private SettingPanel settingPanel;
 
-    [Header("독백 시스템")]
-    [SerializeField] private Text monologueText;
-    [SerializeField, TextArea(3, 10)] private List<string> monologueList;
-    [SerializeField, TextArea(3, 10)] private List<string> loopResetList;
-    private Coroutine currentMonologueCoroutine;
+    [Header("독백")]
+    [SerializeField] private TypewriterText monologueTypewriter;
 
-    [Header("플레이어 설정")]
-    [SerializeField] private PlayerMovement playerMovement;
+    [Tooltip("인덱스 0이 시작 층(10층), 이후 한 층씩 내려간다. Story 테이블의 키.")]
+    [SerializeField]
+    private string[] monologueKeys =
+    {
+        "story.monologue.floor10", "story.monologue.floor9", "story.monologue.floor8",
+        "story.monologue.floor7",  "story.monologue.floor6", "story.monologue.floor5",
+        "story.monologue.floor4",  "story.monologue.floor3", "story.monologue.floor2",
+        "story.monologue.floor1",  "story.monologue.floor0",
+    };
 
-    [Header("씬 전환 설정")]
+    [Tooltip("오답으로 시작 층에 되돌아왔을 때 무작위로 하나를 출력한다.")]
+    [SerializeField]
+    private string[] loopResetKeys =
+    {
+        "story.loopReset.0", "story.loopReset.1", "story.loopReset.2",
+    };
+
+    [Header("씬 전환")]
     [SerializeField] private string mainMenuSceneName = "MainMenu";
 
+    private PlayerMovement playerMovement;
+    private bool menuActivated;
 
-    private void Awake()
+    protected override void AutoBindUI()
     {
-        if (instance == null) 
-            instance = this;
-        else 
-        { 
-            Destroy(gameObject); 
-            return; 
+        if (menuUI == null)
+            menuUI = UIBinder.FindObject(transform, "MenuUI");
+
+        if (elevatorText == null)
+            elevatorText = UIBinder.Find<Text>(transform, "ElevatorButtonText");
+
+        if (monologueTypewriter == null)
+        {
+            Transform monologue = UIBinder.FindTransform(transform, "MonologueText");
+
+            if (monologue != null)
+            {
+                monologueTypewriter = monologue.GetComponent<TypewriterText>();
+
+                if (monologueTypewriter == null)
+                    monologueTypewriter = monologue.gameObject.AddComponent<TypewriterText>();
+            }
         }
 
-        AutoBindUI();
-        InitializeUI();
+        if (settingPanel == null)
+            settingPanel = GetComponentInChildren<SettingPanel>(true);
+
+        UIBinder.BindButtons(transform, new Dictionary<string, UnityAction>
+        {
+            { "ContinueButton",  OnClickContinue  },
+            { "SettingButton",   OnClickSetting   },
+            { "GoToTitleButton", OnClickGoToTitle },
+            { "ExitButton",      OnClickExit      },
+        });
+
+        if (settingPanel != null)
+            settingPanel.Closed += OnSettingClosed;
+    }
+
+    protected override void InitializeUI()
+    {
+        if (menuUI != null)
+            menuUI.SetActive(false);
+
+        if (elevatorText != null)
+            elevatorText.gameObject.SetActive(false);
+
+        if (monologueTypewriter != null)
+            monologueTypewriter.Clear();
+
+        if (settingPanel != null)
+            settingPanel.Close();
     }
 
     private void Start()
@@ -61,141 +109,130 @@ public class StoryModeUIManager : MonoBehaviour
         GameManager.OnLoopReset -= HandleLoopReset;
     }
 
+    protected override void OnDestroy()
+    {
+        if (settingPanel != null)
+            settingPanel.Closed -= OnSettingClosed;
+
+        base.OnDestroy();
+    }
+
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            menuActivated = !menuActivated;
-            ToggleMenu(menuActivated);
-        }
+        if (!Input.GetKeyDown(KeyCode.Escape))
+            return;
+
+        // 설정 패널이 열려 있으면 그쪽이 입력을 소비한다.
+        if (settingPanel != null && settingPanel.HandleCancelInput())
+            return;
+
+        menuActivated = !menuActivated;
+        ToggleMenu(menuActivated);
     }
 
-    private void AutoBindUI() // UI 자동화 함수
-    {
-        if (menuUI == null)
-            menuUI = transform.Find("MenuUI")?.gameObject;
+    // ── 독백 ──────────────────────────────────────────────
 
-        if (elevatorText == null)
-            elevatorText = transform.Find("ElevatorButtonText")?.GetComponent<Text>();
-
-        if (monologueText == null)
-            monologueText = transform.Find("MonologueText")?.GetComponent<Text>();
-
-        if (menuUI != null)
-        {
-            Button[] buttons = menuUI.GetComponentsInChildren<Button>(true);
-            foreach (Button button in buttons)
-            {
-                switch (button.gameObject.name)
-                {
-                    case "ContinueButton": button.onClick.AddListener(OnClickContinue); break;
-                    case "GoToTitleButton": button.onClick.AddListener(OnClickGoToTitle); break;
-                    case "ExitButton": button.onClick.AddListener(OnClickExit); break;
-                }
-            }
-        }
-    }
-
-    private void InitializeUI() // UI 초기화 함수
-    {
-        if (menuUI != null)
-            menuUI.SetActive(false);
-        if (elevatorText != null)
-            elevatorText.gameObject.SetActive(false);
-        if (monologueText != null)
-            monologueText.gameObject.SetActive(false);
-    }
-
-    private void HandleFloorFirstVisited(int floor) // 최초 층을 처리하는 함수
+    private void HandleFloorFirstVisited(int floor)
     {
         int index = 10 - floor;
-        if (index >= 0 && index < monologueList.Count)
-        {
-            if(SoundManager.instance != null)
-                ShowMonologue(monologueList[index]);
-        }
+
+        if (index < 0 || index >= monologueKeys.Length)
+            return;
+
+        ShowMonologue(monologueKeys[index]);
     }
 
-    private void HandleLoopReset() // 10층 회귀 시 독백을 출력하는 함수
+    private void HandleLoopReset()
     {
-        if (loopResetList.Count > 0)
-        {
-            int randomIndex = Random.Range(0, loopResetList.Count);
-            ShowMonologue(loopResetList[randomIndex]);
-        }
+        if (loopResetKeys == null || loopResetKeys.Length == 0)
+            return;
+
+        ShowMonologue(loopResetKeys[Random.Range(0, loopResetKeys.Length)]);
     }
 
-    private void ShowMonologue(string content) // 독백을 출력하는 함수
+    private void ShowMonologue(string key)
     {
-        if (currentMonologueCoroutine != null) 
-            StopCoroutine(currentMonologueCoroutine);
+        if (monologueTypewriter == null)
+            return;
 
-        currentMonologueCoroutine = StartCoroutine(TypeMonologue(content));
+        monologueTypewriter.Play(Loc.Story(key));
     }
 
-    private IEnumerator TypeMonologue(string content) // 독백을 출력하는 코루틴
+    // ── 메뉴 ──────────────────────────────────────────────
+
+    private void ToggleInteractionText(bool isVisible)
     {
-        monologueText.text = "";
-        monologueText.gameObject.SetActive(true);
-        foreach (char letter in content.ToCharArray())
-        {
-            monologueText.text += letter;
-            yield return new WaitForSecondsRealtime(letter == '\n' ? 0.2f : 0.05f);
-        }
-        yield return new WaitForSecondsRealtime(2.0f);
-        monologueText.gameObject.SetActive(false);
-        currentMonologueCoroutine = null;
+        if (elevatorText != null)
+            elevatorText.gameObject.SetActive(isVisible);
     }
 
-    private void ToggleInteractionText(bool isVisible) // 엘리베이터 텍스트를 토글하는 함수
-    { 
-        if (elevatorText != null) 
-            elevatorText.gameObject.SetActive(isVisible); 
-    }
-
-    private void ToggleMenu(bool isVisible) // 메뉴UI를 토글하는 함수
+    private void ToggleMenu(bool isVisible)
     {
         if (menuUI == null)
             return;
 
         menuUI.SetActive(isVisible);
+
         Cursor.lockState = isVisible ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = isVisible;
 
-        if(playerMovement != null)
+        if (playerMovement != null)
             playerMovement.canMove = !isVisible;
 
         AudioListener.pause = isVisible;
-        Time.timeScale = isVisible ? 0f : 1f;    
+        Time.timeScale = isVisible ? 0f : 1f;
     }
 
-    public void OnClickContinue() // 계속하기 버튼 클릭 시 실행되는 함수
+    public void OnClickContinue()
     {
         PlayButtonSound();
         menuActivated = false;
         ToggleMenu(menuActivated);
     }
 
-    public void OnClickGoToTitle() // 타이틀 버튼 클릭 시 실행되는 함수
+    public void OnClickSetting()
     {
-        if (SoundManager.instance != null)
+        PlayButtonSound();
+
+        if (settingPanel == null)
+            return;
+
+        // 볼륨 조절을 귀로 확인할 수 있어야 하므로 일시적으로 오디오를 되살린다.
+        AudioListener.pause = false;
+        settingPanel.Open();
+    }
+
+    private void OnSettingClosed()
+    {
+        AudioListener.pause = menuActivated;
+
+        if (menuUI != null)
+            menuUI.SetActive(menuActivated);
+    }
+
+    public void OnClickGoToTitle()
+    {
+        PlayButtonSound();
+
+        if (SoundManager.HasInstance)
             SoundManager.instance.StopAllSound();
 
-        PlayButtonSound();
+        // 씬을 넘기기 전에 반드시 되돌려야 다음 씬이 멈춘 채로 시작하지 않는다.
         Time.timeScale = 1f;
         AudioListener.pause = false;
+
         SceneManager.LoadScene(mainMenuSceneName);
     }
 
-    public void OnClickExit() // 나가기 버튼 클릭 시 실행되는 함수
+    public void OnClickExit()
     {
         PlayButtonSound();
-        Application.Quit(); 
-    }
+        Time.timeScale = 1f;
 
-    private void PlayButtonSound() // 버튼 소리를 재생하는 함수
-    {
-        if (SoundManager.instance != null)
-            SoundManager.instance.PlayButtonSound();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }

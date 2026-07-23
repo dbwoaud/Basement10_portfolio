@@ -16,8 +16,8 @@ public class MainMenuManager : MonoBehaviour
 
     private void Start()
     {
-        if (FadeManager.instance != null)
-            FadeManager.instance.SetAllBackground(false);
+        if (FadeManager.Instance != null)
+            FadeManager.Instance.SetAllBackground(false);
     }
 
     public void StartGameSequence() // 게임 시작 시 연출을 수행하는 함수
@@ -34,10 +34,10 @@ public class MainMenuManager : MonoBehaviour
 
         yield return new WaitForSeconds(1.0f);
 
-        if (FadeManager.instance != null)
+        if (FadeManager.Instance != null)
         {
-            FadeManager.instance.FadeIn(1.5f);
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
+            FadeManager.Instance.FadeIn(1.5f);
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
         }
 
         SceneManager.LoadScene(nextSceneName);

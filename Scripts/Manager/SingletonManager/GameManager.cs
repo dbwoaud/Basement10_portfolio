@@ -41,7 +41,7 @@ public class GameManager : Singleton<GameManager>
     override protected void Awake()
     {
         base.Awake();
-        if(instance == this)
+        if(Instance == this)
             SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -59,7 +59,7 @@ public class GameManager : Singleton<GameManager>
 
     private void OnDestroy() 
     { 
-        if(instance == this)
+        if(Instance == this)
             SceneManager.sceneLoaded -= OnSceneLoaded; 
     }
 
@@ -106,8 +106,8 @@ public class GameManager : Singleton<GameManager>
                 movement.canMove = true;
         }
 
-        if (FadeManager.instance != null)
-            FadeManager.instance.FadeOut(2.0f);
+        if (FadeManager.Instance != null)
+            FadeManager.Instance.FadeOut(2.0f);
 
         GenerateMap();
         UpdateFloorDisplay();
@@ -138,10 +138,10 @@ public class GameManager : Singleton<GameManager>
         else if (currentFloor > targetFloor)
         {
             currentMapInstance = Instantiate(map, mapSpawnPoint.position, mapSpawnPoint.rotation);
-            if (SpawnAbnormalManager.instance != null)
+            if (SpawnAbnormalManager.Instance != null)
             {
-                SpawnAbnormalManager.instance.mapRoot = currentMapInstance;
-                currentAbnormalData = SpawnAbnormalManager.instance.SelectAbnormal();
+                SpawnAbnormalManager.Instance.mapRoot = currentMapInstance;
+                currentAbnormalData = SpawnAbnormalManager.Instance.SelectAbnormal();
                 if (currentAbnormalData != null)
                     Debug.Log("이상현상 번호: " + currentAbnormalData.abnormalName + "\n 이상현상 설명: " + currentAbnormalData.abnormalDescription);
                 else
@@ -257,18 +257,18 @@ public class GameManager : Singleton<GameManager>
 
     IEnumerator EndingSequenceCoroutine(EndType type) // 엔딩을 진행하는 코루틴
     {
-        if (SoundManager.instance != null) 
-            SoundManager.instance.StopAllSound();
+        if (SoundManager.Instance != null) 
+            SoundManager.Instance.StopAllSound();
 
-        if (FadeManager.instance != null)
+        if (FadeManager.Instance != null)
         {
             if (type == EndType.Bad)
-                FadeManager.instance.FadeIn();
+                FadeManager.Instance.FadeIn();
             
             else if (type == EndType.True)
-                FadeManager.instance.FlashIn(2.0f);
+                FadeManager.Instance.FlashIn(2.0f);
 
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
         }
 
         string sceneName = (type == EndType.Bad) ? badEndingSceneName : trueEndingSceneName;

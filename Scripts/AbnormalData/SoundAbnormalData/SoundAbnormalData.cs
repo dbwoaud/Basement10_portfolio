@@ -13,33 +13,52 @@ public class SoundAbnormalData : AbnormalData
     public string targetName;
 
 
-    public override void ApplyAbnormal(GameObject mapRoot)
+    public override void ApplyAbnormal(GameObject mapRoot) // 이상 현상을 적용하는 함수
     {
         bool isMute = (soundMode == SoundMode.Mute);
         bool isDouble = (soundMode == SoundMode.Double);
 
         if (targetType == TargetType.Player)
+            ApplyToPlayer(isMute, isDouble);
+        
+        else
+            ApplyToNPC(isMute, isDouble);
+    }
+    private static void ApplyToPlayer(bool isMute, bool isDouble) // 플레이어의 사운드 이상 현상을 적용하는 함수
+    {
+        PlayerMovement player = FindAnyObjectByType<PlayerMovement>();
+        if (player == null)
+            return;
+
+        if (player.TryGetComponent(out FootstepController footstep))
+            footstep.SetAbnormalStatus(isMute, isDouble);
+    }
+
+    private static void ApplyToNPC(bool isMute, bool isDouble) // NPC의 사운드 이상 현상을 적용하는 함수
+    {
+        NPCMovement npc = FindAnyObjectByType<NPCMovement>();
+        if (npc == null)
+            return;
+
+        if (npc.TryGetComponent(out FootstepController footstep))
+            footstep.SetAbnormalStatus(isMute, isDouble);
+
+        npc.SetAbnormalStatus(isMute, isDouble);
+    }
+
+    private NPCMovement ResolveNPC(GameObject mapRoot) // 맵 안의 NPC 이동 컴포넌트를 찾는 함수
+    {
+        if (!string.IsNullOrEmpty(targetName))
         {
-            PlayerMovement player = FindAnyObjectByType<PlayerMovement>();
-            if (player != null)
+            Transform target = FindTarget(mapRoot, targetName);
+            if (target != null)
             {
-                FootstepController fc = player.GetComponent<FootstepController>();
-                if (fc != null)
-                    fc.SetAbnormalStatus(isMute, isDouble);
+                NPCMovement found = target.GetComponentInChildren<NPCMovement>();
+                if (found != null)
+                    return found;
             }
         }
 
-        else 
-        {
-            NPCMovement npc = FindAnyObjectByType<NPCMovement>();
-            if (npc != null)
-            {
-                FootstepController fc = npc.GetComponent<FootstepController>();
-                if (fc != null)
-                    npc.SetAbnormalStatus(isMute, isDouble);
-            }     
-        }
+        return FindAnyObjectByType<NPCMovement>();
     }
 }
-
-
