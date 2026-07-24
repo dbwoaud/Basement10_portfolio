@@ -28,6 +28,9 @@ public class EndingCreditManager : MonoBehaviour
 
     private IEnumerator ReturnToMainMenuCoroutine() // 메인메뉴로 이동하는 코루틴
     {
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.StopAllSound();
+
         if (FadeManager.Instance != null)
         {
             FadeManager.Instance.SetBlackBackGround(true);

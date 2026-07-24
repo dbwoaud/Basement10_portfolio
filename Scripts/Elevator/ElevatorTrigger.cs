@@ -11,18 +11,24 @@ public class ElevatorTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (ElevatorController.IsTeleporting)
+            return;
+
         if (other.CompareTag("Player") && elevatorController != null)
             elevatorController.PlayerEnteredInnerTrigger();
     }
 
     private void OnTriggerExit(Collider other)
     {
+        if (ElevatorController.IsTeleporting)
+            return;
+
         if (other.CompareTag("Player") && elevatorController != null)
             elevatorController.PlayerExitedInnerTrigger();
         
     }
 
-    private void AutoBindUI() // UI ÀÚµ¿È­ ÇÔ¼ö
+    private void AutoBindUI() // UI ï¿½Úµï¿½È­ ï¿½Ô¼ï¿½
     {
         if (elevatorController == null)
             elevatorController = GetComponentInParent<ElevatorController>();

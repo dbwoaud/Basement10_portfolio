@@ -6,6 +6,8 @@ public enum TriggerType { Exit, Return }
 
 public class ElevatorController : MonoBehaviour
 {
+    public static bool IsTeleporting = false;
+
     [Header("설정")]
     public TriggerType type;
     [SerializeField] private float detectionDistance = 3f; 
@@ -22,10 +24,14 @@ public class ElevatorController : MonoBehaviour
     [SerializeField] private bool isAnimating = false;
     [SerializeField] private bool isSequenceRunning = false;
     [SerializeField] private bool ignoreFirstTrigger = false;
+    [SerializeField] private Collider innerTriggerCollider;
     public bool isOpen {  get; private set; }
 
     [Header("연출 설정")]
     [SerializeField] private Transform standPoint;
+    [SerializeField] private float standPointMoveDuration = 3.0f;
+
+    private CameraLook cameraLook;
 
     public static event Action<TriggerType> OnElevatorAnswerSelected;
 
@@ -36,13 +42,28 @@ public class ElevatorController : MonoBehaviour
 
     private void Start()
     {
-        playerMovement = FindAnyObjectByType<PlayerMovement>();
-        if (playerMovement != null)
+        InitializePlayerRef();      
+    }
+
+    private void InitializePlayerRef()
+    {
+        if (playerMovement == null)
         {
-            playerTransform = playerMovement.transform;
-            if (Vector3.Distance(transform.position, playerTransform.position) < detectionDistance)
-                ignoreFirstTrigger = true;
-        }         
+            playerMovement = FindAnyObjectByType<PlayerMovement>();
+            if (playerMovement != null)
+            {
+                playerTransform = playerMovement.transform;
+                if (Vector3.Distance(transform.position, playerTransform.position) < detectionDistance)
+                    ignoreFirstTrigger = true;
+            }
+        }
+    }
+
+    public void InitializeFirstTriggerState(Vector3 playerPosition)
+    {
+        InitializePlayerRef();
+        ignoreFirstTrigger = innerTriggerCollider != null
+            && innerTriggerCollider.bounds.Contains(playerPosition);
     }
 
     void Update()
@@ -53,6 +74,12 @@ public class ElevatorController : MonoBehaviour
         HandleProximityLogic();
     }
 
+    private void OnDisable()
+    {
+        if (cameraLook != null)
+            cameraLook.IsLookEnabled = true;
+    }
+
     void AutoBindUI() // UI 자동화 함수
     {
         if (animator == null)
@@ -61,12 +88,21 @@ public class ElevatorController : MonoBehaviour
         if (transform.parent != null)
             parentAnimator = transform.parent.GetComponent<Animator>();
 
+        if (innerTriggerCollider == null)
+        {
+            ElevatorTrigger trigger = GetComponentInChildren<ElevatorTrigger>();
+            if (trigger != null)
+                innerTriggerCollider = trigger.GetComponent<Collider>();
+        }
+
         if (standPoint == null)
             standPoint = transform.Find("StandPoint");
     }
 
     public void PlayerEnteredInnerTrigger() // 플레이어가 엘리베이터 안쪽 영역에 닿을 때 실행되는 함수
     {
+        InitializePlayerRef();
+
         if (ignoreFirstTrigger)
             return;
 
@@ -120,6 +156,12 @@ public class ElevatorController : MonoBehaviour
 
         yield return new WaitForSeconds(transferDelay);
         OnElevatorAnswerSelected?.Invoke(type);
+        if (cameraLook != null)
+        {
+            cameraLook.ResyncFromTransforms();
+            cameraLook.IsLookEnabled = true;
+        }
+
         isSequenceRunning = false;
     }
 
@@ -144,32 +186,43 @@ public class ElevatorController : MonoBehaviour
             yield break;
 
         CharacterController cc = playerTransform.GetComponent<CharacterController>();
-        if (cc != null) 
+        if (cc != null)
             cc.enabled = false;
+
+        if (cameraLook == null)
+            cameraLook = playerTransform.GetComponentInChildren<CameraLook>();
+
+        if (cameraLook != null)
+            cameraLook.IsLookEnabled = false;
+
+        Transform camTransform = (cameraLook != null) ? cameraLook.transform : Camera.main?.transform;
 
         Vector3 startPos = playerTransform.position;
         Quaternion startRot = playerTransform.rotation;
+        Quaternion startCamRot = (camTransform != null) ? camTransform.localRotation : Quaternion.identity;
 
-        Camera mainCam = Camera.main;
-        if (mainCam != null)
-            mainCam.transform.localRotation = Quaternion.Lerp(mainCam.transform.localRotation, Quaternion.identity, 1f);
-        
         float elapsed = 0f;
-        float duration = 3.0f;
 
-        while (elapsed < duration)
+        while (elapsed < standPointMoveDuration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.SmoothStep(0, 1, elapsed / duration);
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / standPointMoveDuration);
+
             playerTransform.position = Vector3.Lerp(startPos, standPoint.position, t);
-            playerTransform.rotation = Quaternion.Lerp(startRot, standPoint.rotation, t);
+            playerTransform.rotation = Quaternion.Slerp(startRot, standPoint.rotation, t);
+
+            if (camTransform != null)
+                camTransform.localRotation = Quaternion.Slerp(startCamRot, Quaternion.identity, t);
+
             yield return null;
         }
 
-        playerTransform.position = standPoint.position;
-        playerTransform.rotation = standPoint.rotation;
+        playerTransform.SetPositionAndRotation(standPoint.position, standPoint.rotation);
 
-        if (cc != null) 
+        if (camTransform != null)
+            camTransform.localRotation = Quaternion.identity;
+
+        if (cc != null)
             cc.enabled = true;
     }
 
@@ -187,4 +240,6 @@ public class ElevatorController : MonoBehaviour
         if (SoundManager.Instance != null)
             SoundManager.Instance.PlayElevatorDoorSound();
     }
+
+
 }

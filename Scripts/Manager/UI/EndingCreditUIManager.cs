@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,14 +14,22 @@ public class EndingCreditUIManager : BaseUIManager<EndingCreditUIManager>
     [SerializeField] private Text nameText;
     [SerializeField] private Button skipButton;
 
-    [Header("Å©·¹µ÷ ³»¿ë")]
-    [Tooltip("¿ªÇÒ ÀÌ¸§ÀÇ Story Å×ÀÌºí Å°. ¿¹: credit.role.programming")]
-    [SerializeField] private string[] roleKeys;
+    [Header("Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½")]
+    [SerializeField]
+    private string[] roleKeys =
+    {
+        "credit.role.0", "credit.role.1", "credit.role.2", "credit.role.3", "credit.role.4",
+        "credit.role.5", "credit.role.6", "credit.role.7", "credit.role.8",
+    };
 
-    [Tooltip("Ç¥½ÃÇÒ ÀÌ¸§. °íÀ¯¸í»çÀÌ¹Ç·Î ¹ø¿ªÇÏÁö ¾Ê´Â´Ù.")]
-    [SerializeField, TextArea] private string[] names;
+    [SerializeField]
+    private string[] nameKeys =
+    {
+        "credit.name.0", "credit.name.1", "credit.name.2", "credit.name.3", "credit.name.4",
+        "credit.name.5", "credit.name.6", "credit.name.7", "credit.name.8",
+    };
 
-    [Header("¿¬Ãâ")]
+    [Header("ï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private float fadeDuration = 1.5f;
     [SerializeField] private float displayDuration = 4.0f;
 
@@ -57,18 +66,39 @@ public class EndingCreditUIManager : BaseUIManager<EndingCreditUIManager>
 
     private void Start()
     {
-        if (roleKeys != null && roleKeys.Length > 0 && names != null && names.Length > 0)
-            creditRoutine = StartCoroutine(CreditSequenceRoutine());
+        if (!ValidateKeys())
+            return;
+
+        creditRoutine = StartCoroutine(CreditSequenceRoutine());
+    }
+
+    private bool ValidateKeys()
+    {
+        if (roleKeys == null || roleKeys.Length == 0)
+        {
+            Debug.LogError("[Å©ï¿½ï¿½ï¿½ï¿½] roleKeysï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.", this);
+            return false;
+        }
+
+        if (nameKeys == null || nameKeys.Length != roleKeys.Length)
+        {
+            Debug.LogError(
+                $"[Å©ï¿½ï¿½ï¿½ï¿½] roleKeys({roleKeys.Length})ï¿½ï¿½ nameKeys({nameKeys?.Length ?? 0})ï¿½ï¿½ " +
+                "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ï¿½Ï´ï¿½.", this);
+            return false;
+        }
+
+        return true;
     }
 
     private IEnumerator CreditSequenceRoutine()
     {
         if (FadeManager.HasInstance)
         {
-            FadeManager.instance.SetAllBackground(false);
-            FadeManager.instance.SetBlackBackGround(true);
-            FadeManager.instance.FadeOut(5.0f);
-            yield return new WaitUntil(() => !FadeManager.instance.isFading);
+            FadeManager.Instance.SetAllBackground(false);
+            FadeManager.Instance.SetBlackBackGround(true);
+            FadeManager.Instance.FadeOut(5.0f);
+            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
         }
 
         if (blackBackgroundPanel != null)
@@ -76,9 +106,8 @@ public class EndingCreditUIManager : BaseUIManager<EndingCreditUIManager>
 
         yield return new WaitForSeconds(0.5f);
 
-        int count = Mathf.Min(roleKeys.Length, names.Length);
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < roleKeys.Length; i++)
         {
             if (isSkipped)
                 yield break;
@@ -87,7 +116,7 @@ public class EndingCreditUIManager : BaseUIManager<EndingCreditUIManager>
                 roleText.text = Loc.Story(roleKeys[i]);
 
             if (nameText != null)
-                nameText.text = names[i];
+                nameText.text = Loc.Story(nameKeys[i]);
 
             yield return StartCoroutine(FadeTextAlpha(0f, 1f, fadeDuration));
             yield return new WaitForSeconds(displayDuration);
@@ -137,10 +166,9 @@ public class EndingCreditUIManager : BaseUIManager<EndingCreditUIManager>
         isSkipped = true;
 
         if (SoundManager.HasInstance)
-        {
-            SoundManager.instance.StopAllSound();
-            SoundManager.instance.PlayButtonSound();
-        }
+            SoundManager.Instance.StopAllSound();
+
+        PlayButtonSound();
 
         if (skipButton != null)
             skipButton.interactable = false;

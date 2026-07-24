@@ -3,89 +3,93 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(MapSpawner))]
+[RequireComponent(typeof(EndingDirector))]
 public class GameManager : Singleton<GameManager>
 {
-    [Header("°ÔÀÓ ¼³Á¤")]
+    [Header("Floor Settings")]
     [SerializeField] private int startFloor = 10;
-    [SerializeField] private int currentFloor = 10;
     [SerializeField] private int targetFloor = 0;
-    [SerializeField] private bool[] visitedFloors = new bool[11];
-    [SerializeField] private bool isReturningFromFailure = false;
-    public bool showFloorNumber = true;
 
-    [Header("¸Ê »ı¼º ¼³Á¤")]
-    [SerializeField] private GameObject map;
-    [SerializeField] private GameObject finalMap;
+    [Header("Scene Settings")]
+    [SerializeField] private string storySceneName = "StoryMode";
+    [SerializeField] private string mainMenuSceneName = "MainMenu";
+
+    [Header("Map Settings")]
     [SerializeField] private Transform mapSpawnPoint;
 
-    [Header("ÇÃ·¹ÀÌ¾î ¼³Á¤")]
-    public GameObject player;
+    [Header("Player Settings")]
     [SerializeField] private Vector3 playerSpawnPosition;
     [SerializeField] private Quaternion playerSpawnRotation;
 
-    [Header("ÀÌ»ó Çö»ó ¼³Á¤")]
-    [SerializeField] private GameObject currentMapInstance;
-    [SerializeField] private AbnormalData currentAbnormalData;
+    public GameObject player { get; private set; }
+    public bool showFloorNumber { get; set; } = true;
 
-    [Header("¾À ÀÌ¸§ ¼³Á¤")]
-    [SerializeField] private string currentSceneName = "StoryMode";
-    [SerializeField] private string mainMenuSceneName = "MainMenu";
-    [SerializeField] private string badEndingSceneName = "BadEnding";
-    [SerializeField] private string trueEndingSceneName = "TrueEnding";
+    public bool isEnded => endingDirector.IsEnded;
+    public int CurrentFloor => progress.CurrentFloor;
 
     public static event Action<int> OnFloorFirstVisited;
     public static event Action OnLoopReset;
 
-    public bool isEnded { get; private set; } = false;
+    private FloorProgress progress;
+    private MapSpawner mapSpawner;
+    private EndingDirector endingDirector;
 
-    override protected void Awake()
+    protected override void Awake()
     {
         base.Awake();
-        if(Instance == this)
+        if (Instance == this)
+        {
             SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        progress = new FloorProgress(startFloor, targetFloor);
+        mapSpawner = GetComponent<MapSpawner>();
+        endingDirector = GetComponent<EndingDirector>();
     }
 
     private void OnEnable()
     {
-        EndingTrigger.OnEndingTriggered += ProcessEnding;
         ElevatorController.OnElevatorAnswerSelected += CheckAnswer;
     }
 
     private void OnDisable()
     {
-        EndingTrigger.OnEndingTriggered -= ProcessEnding;
         ElevatorController.OnElevatorAnswerSelected -= CheckAnswer;
     }
 
-    private void OnDestroy() 
-    { 
-        if(Instance == this)
-            SceneManager.sceneLoaded -= OnSceneLoaded; 
+    protected override void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        base.OnDestroy();
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) // ¾À ·Îµù ½Ã ½ÇÇàÇÒ ÇÔ¼ö
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == mainMenuSceneName)
         {
-            isEnded = false;
-            currentFloor = startFloor;
-            isReturningFromFailure = false;
-
-            for (int i = 0; i < visitedFloors.Length; i++)
-                visitedFloors[i] = false;
-
+            progress.Reset();
+            endingDirector.ResetState();
             return;
         }
 
         GameObject foundPlayer = GameObject.FindWithTag("Player");
-        if (foundPlayer != null) 
+        if (foundPlayer != null)
+        {
             player = foundPlayer;
+        }
 
         GameObject foundSpawnPoint = GameObject.Find("MapSpawnPoint");
-        if (foundSpawnPoint != null) 
+        if (foundSpawnPoint != null)
+        {
             mapSpawnPoint = foundSpawnPoint.transform;
+        }
 
-        if (scene.name == currentSceneName)
+        if (scene.name == storySceneName)
         {
             showFloorNumber = true;
             if (player != null)
@@ -97,181 +101,108 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    public void StartLoop() // °ÔÀÓ ·ÎÁ÷À» ½ÇÇàÇÏ´Â ÇÔ¼ö
+    public void StartLoop()
     {
         if (player != null)
         {
             var movement = player.GetComponent<PlayerMovement>();
             if (movement != null)
-                movement.canMove = true;
-        }
-
-        if (FadeManager.Instance != null)
-            FadeManager.Instance.FadeOut(2.0f);
-
-        GenerateMap();
-        UpdateFloorDisplay();
-        ResetPlayerPosition();
-        ResetAbnormal();
-        HandleFloorEvents();
-    }
-
-    private void GenerateMap() // ¸ÊÀ» »ı¼ºÇÏ´Â ÇÔ¼ö
-    {
-        if (currentMapInstance != null) 
-            Destroy(currentMapInstance);
-
-        if(SceneManager.GetActiveScene().name == badEndingSceneName)
-        {
-            currentMapInstance = Instantiate(map, mapSpawnPoint.position, mapSpawnPoint.rotation);
-            currentAbnormalData = null;
-            return;
-        }
-
-        if (currentFloor == startFloor)
-        {
-            currentMapInstance = Instantiate(map, mapSpawnPoint.position, mapSpawnPoint.rotation);
-            currentAbnormalData = null;
-            Debug.Log("10Ãş¿¡´Â ÀÌ»óÇö»óÀÌ ¾ø½À´Ï´Ù.");
-        }
-
-        else if (currentFloor > targetFloor)
-        {
-            currentMapInstance = Instantiate(map, mapSpawnPoint.position, mapSpawnPoint.rotation);
-            if (SpawnAbnormalManager.Instance != null)
             {
-                SpawnAbnormalManager.Instance.mapRoot = currentMapInstance;
-                currentAbnormalData = SpawnAbnormalManager.Instance.SelectAbnormal();
-                if (currentAbnormalData != null)
-                    Debug.Log("ÀÌ»óÇö»ó ¹øÈ£: " + currentAbnormalData.abnormalName + "\n ÀÌ»óÇö»ó ¼³¸í: " + currentAbnormalData.abnormalDescription);
-                else
-                    Debug.Log("ÇöÀç Ãş¿¡´Â ÀÌ»óÇö»óÀÌ ¾ø½À´Ï´Ù.");
-                
+                movement.canMove = true;
             }
         }
 
-        else
+        if (FadeManager.HasInstance)
         {
-            Vector3 finalMapPos = mapSpawnPoint.position - new Vector3(0f, 0f, 5f);
-            currentMapInstance = Instantiate(finalMap, finalMapPos, mapSpawnPoint.rotation);
-            currentAbnormalData = null;
+            FadeManager.Instance.FadeOut(2.0f);
         }
+
+        // 1. ClearPreviousFloorState() - ë°˜ë“œì‹œ ë§µ ìƒì„± 'ì•'ì—ì„œ ì‹¤í–‰ë˜ì–´ì•¼ í•¨
+        ClearPreviousFloorState();
+
+        // 2. plan ì¶”ì¶œ ë° mapSpawner.Spawn() í˜¸ì¶œ
+        bool isEndingScene = SceneManager.GetActiveScene().name == endingDirector.BadEndingSceneName;
+        FloorRule.MapPlan plan = FloorRule.ResolveMapPlan(progress.CurrentFloor, startFloor, targetFloor, isEndingScene);
+        mapSpawner.Spawn(plan, mapSpawnPoint);
+
+        // 3. ë””ìŠ¤í”Œë ˆì´ ê°±ì‹ 
+        mapSpawner.UpdateFloorDisplay(progress.CurrentFloor, showFloorNumber);
+
+        // 4. í”Œë ˆì´ì–´ ìœ„ì¹˜ ì´ˆê¸°í™”
+        ResetPlayerPosition();
+
+        // 5. ì´ë²¤íŠ¸ ì „íŒŒ
+        RaiseFloorEvents();
     }
 
-    private void UpdateFloorDisplay() // ¸Ê¿¡ ÇöÀç ÃşÀ» Ãâ·ÂÇÏ´Â ÇÔ¼ö
+    private void ClearPreviousFloorState()
     {
-        if (currentMapInstance == null) 
+        /*
+         * [ê²Œì„í”Œë ˆì´ ë²„ê·¸ ì¬ë°œ ë°©ì§€ìš© í•µì‹¬ ì£¼ì„]
+         * ClearPreviousFloorState()ëŠ” í”Œë ˆì´ì–´ì˜ FootstepController ë¹„ì •ìƒ ìƒíƒœ(ì˜ˆ: ì´ì¤‘ ë°œìêµ­ íš¨ê³¼ìŒ ë“±)ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+         * ì´ ì‘ì—…ì€ ë°˜ë“œì‹œ mapSpawner.Spawn()ë³´ë‹¤ 'ì•'ì—ì„œ ì‹¤í–‰ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+         * ë§Œì•½ Spawn()ì´ ë¨¼ì € ì‹¤í–‰ë˜ì–´ ìƒˆ ë§µì˜ ì´ìƒí˜„ìƒ(Double Sound ë“±)ì´ í”Œë ˆì´ì–´ì˜ FootstepControllerì— ì ìš©ëœ í›„
+         * ClearPreviousFloorState()ê°€ ì‹¤í–‰ë˜ë©´, ë°©ê¸ˆ ìƒˆë¡œ ì ìš©ëœ ì´ìƒí˜„ìƒ ìƒíƒœê°€ ì¦‰ì‹œ ì§€ì›Œì ¸ì„œ ì´ìƒí˜„ìƒì´ ì •ìƒì ìœ¼ë¡œ ì‘ë™í•˜ì§€ ì•Šê²Œ ë˜ëŠ” ì‹¬ê°í•œ ë²„ê·¸ê°€ ë°œìƒí•©ë‹ˆë‹¤.
+         * NPCëŠ” ë§¤ ì¸µë§ˆë‹¤ ë§µ í”„ë¦¬íŒ¹ê³¼ í•¨ê»˜ ìƒˆë¡œ íŒŒê´´ ë° ìƒì„±ë˜ë¯€ë¡œ ì´ˆê¸°í™” ëŒ€ìƒì´ ì•„ë‹ˆë©°, í”Œë ˆì´ì–´ì— ëŒ€í•´ì„œë§Œ ì´ˆê¸°í™” ì‘ì—…ì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
+         */
+        if (player == null)
             return;
 
-        FloorNumberDisplay display = currentMapInstance.GetComponentInChildren<FloorNumberDisplay>();
-
-        if (display != null)
+        if (player.TryGetComponent(out FootstepController footstep))
         {
-            if(showFloorNumber)
-                display.SetFloorNumber(currentFloor);
-            else
-                display.ResetFloorNumber();
-        }       
+            footstep.SetAbnormalStatus(false, false);
+        }
     }
 
     private void ResetPlayerPosition()
     {
-        if (player == null) 
+        if (player == null)
             return;
 
+        StartCoroutine(ResetPlayerPositionRoutine());
+    }
+
+    private IEnumerator ResetPlayerPositionRoutine()
+    {
+        ElevatorController.IsTeleporting = true;
+
         CharacterController cc = player.GetComponent<CharacterController>();
-
-        if (cc != null) 
-            cc.enabled = false;
-
+        if (cc != null) cc.enabled = false;
         player.transform.SetPositionAndRotation(playerSpawnPosition, playerSpawnRotation);
+        if (cc != null) cc.enabled = true;
 
-        if (cc != null) 
-            cc.enabled = true;
+        yield return new WaitForFixedUpdate();
+        yield return null;
 
+        ElevatorController.IsTeleporting = false;
+
+        ElevatorController[] elevators =
+            FindObjectsByType<ElevatorController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (var elevator in elevators)
+            elevator.InitializeFirstTriggerState(player.transform.position);
     }
 
-    private void ResetAbnormal() // ÀÌ»óÇö»óÀ» ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö
+    private void RaiseFloorEvents()
     {
-        FootstepController playerFootstep = player.GetComponent<FootstepController>();
-        if (playerFootstep != null)
-            playerFootstep.SetAbnormalStatus(false, false);  
-
-        NPCMovement npc = FindAnyObjectByType<NPCMovement>();
-        if (npc != null)
-        {
-            FootstepController npcFootstep = npc.GetComponent<FootstepController>();
-            if (npcFootstep != null)
-                npcFootstep.SetAbnormalStatus(false, false);
-        }
-    }
-
-    private void HandleFloorEvents() // Ãş ÁøÀÔ °á°ú¿¡ µû¸¥ »óÅÂ ÀÌº¥Æ®¸¦ Ã³¸®ÇÏ´Â ÇÔ¼ö
-    {
-        if (isReturningFromFailure)
+        if (progress.ConsumeReturningFlag())
         {
             OnLoopReset?.Invoke();
-            isReturningFromFailure = false;
         }
-
-        else if (currentFloor >= 0 && currentFloor <= startFloor)
+        else
         {
-            if (!visitedFloors[currentFloor])
+            if (progress.TryMarkVisited())
             {
-                visitedFloors[currentFloor] = true;
-                OnFloorFirstVisited?.Invoke(currentFloor);
+                OnFloorFirstVisited?.Invoke(progress.CurrentFloor);
             }
         }
     }
 
-    public void CheckAnswer(TriggerType choice) // ÇÃ·¹ÀÌ¾îÀÇ ¼±ÅÃ¿¡ µû¸¥ °ÔÀÓ ·ÎÁ÷À» ½ÇÇàÇÏ´Â ÇÔ¼ö
+    public void CheckAnswer(TriggerType choice)
     {
-        if (currentFloor == targetFloor) 
+        if (progress.IsCleared)
             return;
 
-        bool isAbnormal = (currentAbnormalData != null);
-        bool isCorrect = (choice == TriggerType.Exit && !isAbnormal) ||
-                         (choice == TriggerType.Return && isAbnormal);
-
-        if (isCorrect)
-        {
-            currentFloor--;
-            isReturningFromFailure = false;
-        }
-        else
-        {
-            currentFloor = startFloor;
-            isReturningFromFailure = true;
-        }
+        progress.Submit(choice, mapSpawner.HasAbnormal);
         StartLoop();
-    }
-
-    public void ProcessEnding(EndType type) // ¿£µùÀ» ÁøÇàÇÏ´Â ÇÔ¼ö
-    {
-        if (isEnded) 
-            return;
-
-        isEnded = true;
-        StartCoroutine(EndingSequenceCoroutine(type));
-    }
-
-    IEnumerator EndingSequenceCoroutine(EndType type) // ¿£µùÀ» ÁøÇàÇÏ´Â ÄÚ·çÆ¾
-    {
-        if (SoundManager.Instance != null) 
-            SoundManager.Instance.StopAllSound();
-
-        if (FadeManager.Instance != null)
-        {
-            if (type == EndType.Bad)
-                FadeManager.Instance.FadeIn();
-            
-            else if (type == EndType.True)
-                FadeManager.Instance.FlashIn(2.0f);
-
-            yield return new WaitUntil(() => !FadeManager.Instance.isFading);
-        }
-
-        string sceneName = (type == EndType.Bad) ? badEndingSceneName : trueEndingSceneName;
-        SceneManager.LoadScene(sceneName);
     }
 }

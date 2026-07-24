@@ -54,8 +54,8 @@ public class TrueEndingManager : MonoBehaviour
 
     private IEnumerator PlayMonologueCoroutine() // 독백을 재생하는 코루틴
     {
-        if (TrueEndingUIManager.instance != null)
-            yield return StartCoroutine(TrueEndingUIManager.instance.PlayMonologueSequence());
+        if (TrueEndingUIManager.Instance != null)
+            yield return StartCoroutine(TrueEndingUIManager.Instance.PlayMonologueSequence());
     }
 
     private IEnumerator TransitionToNextSceneCoroutine() // 다음 씬으로 이동을 준비하는 코루틴

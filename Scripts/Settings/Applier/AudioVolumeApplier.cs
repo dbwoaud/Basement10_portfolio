@@ -33,7 +33,7 @@ public class AudioVolumeApplier : SettingApplierBase
     private AudioMixer ResolveMixer()
     {
         if (mixer == null && SoundManager.HasInstance)
-            mixer = SoundManager.instance.Mixer;
+            mixer = SoundManager.Instance.Mixer;
 
         return mixer;
     }

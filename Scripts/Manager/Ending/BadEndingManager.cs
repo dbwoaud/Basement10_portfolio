@@ -69,8 +69,8 @@ public class BadEndingManager : MonoBehaviour
 
     private IEnumerator PlayMonologueCoroutine() // 독백을 재생하는 코루틴
     {
-        if (BadEndingUIManager.instance != null)
-            yield return StartCoroutine(BadEndingUIManager.instance.PlayMonologueSequence());
+        if (BadEndingUIManager.Instance != null)
+            yield return StartCoroutine(BadEndingUIManager.Instance.PlayMonologueSequence());
     }
 
     private IEnumerator TransitionToNextSceneCoroutine() // 다음 씬으로 이동을 준비하는 코루틴

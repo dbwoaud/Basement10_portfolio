@@ -30,6 +30,8 @@ public class FootstepController : MonoBehaviour
             return;
         }
 
+        walkTimer -= Time.deltaTime;
+
         if (walkTimer > 0f)
             return;
 
@@ -48,10 +50,9 @@ public class FootstepController : MonoBehaviour
             StartCoroutine(PlayDoubleSoundRoutine());
     }
 
-    private IEnumerator PlayDoubleSoundRoutine(float delay = 0.75f) // 발자국 소리가 두번 들리는 이상현상을 위한 코루틴
+    private IEnumerator PlayDoubleSoundRoutine() // 발자국 소리가 두번 들리는 이상현상을 위한 코루틴
     {
-        yield return new WaitForSeconds(delay);
-
+        yield return new WaitForSeconds(doubleSoundDelay);
         if (SoundManager.HasInstance)
             SoundManager.Instance.PlaySFX(walkSound, volume);
     }

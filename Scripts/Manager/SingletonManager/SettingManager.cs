@@ -94,7 +94,7 @@ public class SettingManager : Singleton<SettingManager>
                 case 1:
                     loaded.resolutionIndex = -1;
                     loaded.displayModeIndex = ToDisplayModeIndex(Screen.fullScreenMode);
-                    loaded.language = GameLanguageExtensions.FromSystemLanguage(Application.systemLanguage);
+                    loaded.languageCode = GameLanguages.FromSystemLanguage(Application.systemLanguage);
                     loaded.version = 2;
                     break;
 

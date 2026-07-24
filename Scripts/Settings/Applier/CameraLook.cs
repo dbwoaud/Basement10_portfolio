@@ -74,4 +74,9 @@ public class CameraLook : SettingApplierBase
         pitch = 0f;
         transform.localRotation = Quaternion.identity;
     }
+
+    public void ResyncFromTransforms()
+    {
+        pitch = NormalizeAngle(transform.localEulerAngles.x);
+    }
 }

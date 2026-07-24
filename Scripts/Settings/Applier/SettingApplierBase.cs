@@ -6,8 +6,8 @@ public abstract class SettingApplierBase : MonoBehaviour
     {
         SettingManager.OnSettingsApplied += HandleApplied;
 
-        if (SettingManager.HasInstance && SettingManager.instance.Current != null)
-            HandleApplied(SettingManager.instance.Current);
+        if (SettingManager.HasInstance && SettingManager.Instance.Current != null)
+            HandleApplied(SettingManager.Instance.Current);
     }
 
     protected virtual void OnDisable()

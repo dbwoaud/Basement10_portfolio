@@ -1,0 +1,19 @@
+{
+    "name": "Basement10",
+    "rootNamespace": "",
+    "references": [
+        "UnityEngine.UI",
+        "Unity.Localization",
+        "Unity.AI.Navigation",
+        "Unity.ResourceManager"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

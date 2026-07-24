@@ -1,8 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
+/// <summary>
+/// [Unity Localization 전환에 따른 변경]
+/// 1. 드롭다운 항목 텍스트를 Loc.UI()로 조회
+/// 2. 언어 값이 로케일 코드 문자열
+/// 3. LocalizationSettings.SelectedLocaleChanged를 구독해 언어가 바뀌면 항목을 다시 채움
+///
+/// 씬 고정 라벨(항목 이름, 버튼 글자)은 이 스크립트가 건드리지 않는다.
+/// 패키지의 LocalizeStringEvent 컴포넌트가 담당한다.
+/// 이 스크립트는 코드가 동적으로 채우는 문자열(드롭다운 항목, 수치 표시)만 다룬다.
+///
+/// UI 행은 런타임 생성하지 않고 인스펙터에 미리 배치한다.
+/// 항목이 10개 수준이고 출시 시점에 고정되므로, 동적 생성 구조를 넣으면
+/// 인스펙터에서 UI 구성을 추적할 수 없게 되어 얻는 것보다 잃는 것이 많다.
+/// </summary>
 public class SettingPanel : MonoBehaviour
 {
     [Header("언어")]
@@ -42,7 +58,7 @@ public class SettingPanel : MonoBehaviour
     [SerializeField] private Button confirmKeepButton;
     [SerializeField] private float revertCountdown = 15f;
 
-    [Header("품질 단계 번역 키")]
+    [Header("번역 키")]
     [SerializeField]
     private string[] qualityKeys =
     {
@@ -55,6 +71,7 @@ public class SettingPanel : MonoBehaviour
     private Coroutine revertRoutine;
     private bool isBound;
 
+    /// <summary>패널이 닫힐 때 알린다. 상위 메뉴가 커서·일시정지 상태를 되돌릴 때 쓴다.</summary>
     public event System.Action Closed;
 
     public bool IsOpen => gameObject.activeSelf;
@@ -69,13 +86,15 @@ public class SettingPanel : MonoBehaviour
 
     private void OnEnable()
     {
-        LocalizationManager.LanguageChanged += OnLanguageChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
     }
 
     private void OnDisable()
     {
-        LocalizationManager.LanguageChanged -= OnLanguageChanged;
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
+
+    // ── 열기 / 닫기 ────────────────────────────────────────
 
     public void Open()
     {
@@ -87,6 +106,7 @@ public class SettingPanel : MonoBehaviour
 
         gameObject.SetActive(true);
         draft = SettingManager.Instance.Current.Clone();
+        RefreshDropdownLabels();
         RefreshUI();
     }
 
@@ -97,17 +117,27 @@ public class SettingPanel : MonoBehaviour
         Closed?.Invoke();
     }
 
+    /// <summary>
+    /// ESC 입력을 외부(메뉴 매니저)에서 전달받는다.
+    /// 패널이 자체 Update에서 Input을 읽으면 상위 메뉴의 ESC와 같은 프레임에 처리되어
+    /// 메뉴까지 닫히는 문제가 있었다.
+    /// </summary>
+    /// <returns>입력을 소비했으면 true.</returns>
     public bool HandleCancelInput()
     {
         if (!IsOpen)
             return false;
 
+        // 되돌리기 대기 중에는 ESC로 닫지 않는다.
         if (confirmPopup != null && confirmPopup.activeSelf)
             return true;
 
         OnCancel();
         return true;
     }
+
+    // ── 초기화 ────────────────────────────────────────────
+
     private void AutoBindUI()
     {
         Transform root = transform;
@@ -151,8 +181,6 @@ public class SettingPanel : MonoBehaviour
 
     private void SetupControls()
     {
-        RefreshDropdownLabels();
-
         SetupSlider(masterSlider, 0f, 1f);
         SetupSlider(bgmSlider, 0f, 1f);
         SetupSlider(sfxSlider, 0f, 1f);
@@ -165,6 +193,7 @@ public class SettingPanel : MonoBehaviour
             confirmPopup.SetActive(false);
     }
 
+    /// <summary>드롭다운 항목 텍스트를 현재 언어로 다시 채운다.</summary>
     private void RefreshDropdownLabels()
     {
         SetupDropdown(graphicDropdown, ResolveQualityLabels());
@@ -180,7 +209,7 @@ public class SettingPanel : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             bool hasKey = qualityKeys != null && i < qualityKeys.Length;
-            result[i] = hasKey ? LocalizationManager.Text(qualityKeys[i]) : QualitySettings.names[i];
+            result[i] = hasKey ? Loc.UI(qualityKeys[i]) : QualitySettings.names[i];
         }
 
         return result;
@@ -192,7 +221,7 @@ public class SettingPanel : MonoBehaviour
         string[] result = new string[count];
 
         for (int i = 0; i < count; i++)
-            result[i] = LocalizationManager.Text(DisplayOptions.DisplayModeKeys[i]);
+            result[i] = Loc.UI(DisplayOptions.DisplayModeKeys[i]);
 
         return result;
     }
@@ -276,26 +305,42 @@ public class SettingPanel : MonoBehaviour
         });
     }
 
-    private void OnLanguageSelected(GameLanguage language)
+    // ── 언어 ──────────────────────────────────────────────
+
+    /// <summary>
+    /// 언어만은 확인 버튼을 기다리지 않고 즉시 적용한다.
+    /// 읽지 못하는 언어로 잘못 바꿨을 때 확인·취소 버튼의 글자마저 읽을 수 없으면
+    /// 되돌리기가 어려워지기 때문이다. 즉시 반영하면 화면을 보고 판단할 수 있다.
+    /// </summary>
+    private void OnLanguageSelected(string localeCode)
     {
         PlayButtonSound();
 
-        draft.language = language;
-
-        if (LocalizationManager.HasInstance)
-            LocalizationManager.instance.SetLanguage(language);
-
+        draft.languageCode = localeCode;
+        SelectLocaleImmediately(localeCode);
         MarkDirty();
     }
 
-    private void OnLanguageChanged(GameLanguage language)
+    private static void SelectLocaleImmediately(string localeCode)
+    {
+        if (!LocalizationSettings.HasSettings)
+            return;
+
+        Locale target = LocalizationSettings.AvailableLocales.GetLocale(new LocaleIdentifier(localeCode));
+
+        if (target != null)
+            LocalizationSettings.SelectedLocale = target;
+    }
+
+    /// <summary>패키지가 로케일을 바꾸면 호출된다. 코드가 채우는 문자열만 갱신한다.</summary>
+    private void OnLocaleChanged(Locale locale)
     {
         RefreshDropdownLabels();
+        RefreshDropdownValues();
         UpdateValueTexts();
-
-        if (languageSelector != null)
-            languageSelector.RefreshLabelFonts();
     }
+
+    // ── 갱신 ──────────────────────────────────────────────
 
     private void RefreshUI()
     {
@@ -303,11 +348,9 @@ public class SettingPanel : MonoBehaviour
             return;
 
         if (languageSelector != null)
-            languageSelector.SetWithoutNotify(draft.language);
+            languageSelector.SetWithoutNotify(draft.languageCode);
 
-        SetDropdown(graphicDropdown, draft.qualityLevel);
-        SetDropdown(displayModeDropdown, draft.displayModeIndex);
-        SetDropdown(resolutionDropdown, DisplayOptions.ResolveResolutionIndex(draft.resolutionIndex));
+        RefreshDropdownValues();
 
         SetSlider(masterSlider, draft.masterVolume);
         SetSlider(bgmSlider, draft.bgmVolume);
@@ -318,6 +361,16 @@ public class SettingPanel : MonoBehaviour
         SetSlider(shakeSlider, draft.cameraShake);
 
         MarkDirty();
+    }
+
+    private void RefreshDropdownValues()
+    {
+        if (draft == null)
+            return;
+
+        SetDropdown(graphicDropdown, draft.qualityLevel);
+        SetDropdown(displayModeDropdown, draft.displayModeIndex);
+        SetDropdown(resolutionDropdown, DisplayOptions.ResolveResolutionIndex(draft.resolutionIndex));
     }
 
     private static void SetDropdown(Dropdown dropdown, int value)
@@ -340,11 +393,14 @@ public class SettingPanel : MonoBehaviour
         UpdateValueTexts();
 
         if (applyButton != null && SettingManager.HasInstance)
-            applyButton.interactable = !draft.IsSameAs(SettingManager.instance.Current);
+            applyButton.interactable = !draft.IsSameAs(SettingManager.Instance.Current);
     }
 
     private void UpdateValueTexts()
     {
+        if (draft == null)
+            return;
+
         SetPercentText(masterValue, draft.masterVolume);
         SetPercentText(bgmValue, draft.bgmVolume);
         SetPercentText(sfxValue, draft.sfxVolume);
@@ -361,16 +417,18 @@ public class SettingPanel : MonoBehaviour
             text.text = Mathf.RoundToInt(value01 * 100f) + "%";
     }
 
+    // ── 버튼 처리 ──────────────────────────────────────────
+
     private void OnApply()
     {
         PlayButtonSound();
 
-        GameSetting current = SettingManager.instance.Current;
+        GameSetting current = SettingManager.Instance.Current;
         bool displayChanged = draft.IsDisplayChangedFrom(current);
         snapshotBeforeApply = current.Clone();
 
-        SettingManager.instance.Commit(draft);
-        draft = SettingManager.instance.Current.Clone();
+        SettingManager.Instance.Commit(draft);
+        draft = SettingManager.Instance.Current.Clone();
         RefreshUI();
 
         if (displayChanged && confirmPopup != null)
@@ -383,9 +441,11 @@ public class SettingPanel : MonoBehaviour
     {
         PlayButtonSound();
 
-        GameSetting current = SettingManager.instance.Current;
-        if (draft.language != current.language && LocalizationManager.HasInstance)
-            LocalizationManager.instance.SetLanguage(current.language);
+        GameSetting current = SettingManager.Instance.Current;
+
+        // 언어는 즉시 적용했으므로 취소 시 되돌려 준다.
+        if (draft.languageCode != current.languageCode)
+            SelectLocaleImmediately(current.languageCode);
 
         draft = current.Clone();
         RefreshUI();
@@ -398,13 +458,16 @@ public class SettingPanel : MonoBehaviour
 
         GameSetting defaults = new GameSetting();
 
+        // 기본값 복원이 화면 해상도와 언어까지 바꾸면 사용자가 놀라므로 그대로 둔다.
         defaults.resolutionIndex = draft.resolutionIndex;
         defaults.displayModeIndex = draft.displayModeIndex;
-        defaults.language = draft.language;
+        defaults.languageCode = draft.languageCode;
 
         draft = defaults;
         RefreshUI();
     }
+
+    // ── 해상도 되돌리기 ────────────────────────────────────
 
     private void StartRevertCountdown()
     {
@@ -425,12 +488,13 @@ public class SettingPanel : MonoBehaviour
             if (confirmCountdownText != null)
                 confirmCountdownText.text = Mathf.CeilToInt(remain).ToString();
 
+            // 일시정지(timeScale = 0) 중에도 카운트다운이 흘러야 한다.
             remain -= Time.unscaledDeltaTime;
             yield return null;
         }
 
-        SettingManager.instance.Commit(snapshotBeforeApply);
-        draft = SettingManager.instance.Current.Clone();
+        SettingManager.Instance.Commit(snapshotBeforeApply);
+        draft = SettingManager.Instance.Current.Clone();
         RefreshUI();
         EndCountdown();
     }
@@ -457,6 +521,6 @@ public class SettingPanel : MonoBehaviour
     private static void PlayButtonSound()
     {
         if (SoundManager.HasInstance)
-            SoundManager.instance.PlayButtonSound();
+            SoundManager.Instance.PlayButtonSound();
     }
 }
