@@ -19,10 +19,10 @@ public class FloorNumberDisplay : MonoBehaviour
 
     private void Awake()
     {
-        BuildPool();
+        InitializeObjectPool();
     }
 
-    private void BuildPool() // 오브젝트 풀을 빌드하는 함수
+    private void InitializeObjectPool() // 오브젝트 풀을 초기화하는 함수
     {
         if (isInitialized)
             return;
@@ -51,10 +51,9 @@ public class FloorNumberDisplay : MonoBehaviour
         isInitialized = true;
     }
 
-    public void SetFloorNumber(int floor) // 현재 층을 씬에 배치하는 함수
+    public void SetFloorNumber(int floor) // 현재 층 프리팹을 씬에 배치하는 함수
     {
-        BuildPool();
-
+        InitializeObjectPool();
         if (!isInitialized)
             return;
 
@@ -76,7 +75,7 @@ public class FloorNumberDisplay : MonoBehaviour
         }
     }
 
-    public void ResetFloorNumber() // 현재 층 숫자를 리셋하는 함수
+    public void ResetFloorNumber() // 현재 씬에 배치된 층 숫자 프리팹을 비활성화하는 함수
     {
         if (!isInitialized)
             return;
@@ -94,13 +93,13 @@ public class FloorNumberDisplay : MonoBehaviour
     private static void GetDigits(int number, List<int> result) // 현재 층 표시에 필요한 정수를 배열에 저장하는 함수
     {
         result.Clear();
+
         int temp = Mathf.Abs(number);
         if (temp == 0)
         {
             result.Add(0);
             return;
         }
-
         while (temp > 0)
         {
             result.Add(temp % 10);

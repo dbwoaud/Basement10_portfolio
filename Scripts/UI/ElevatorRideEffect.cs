@@ -12,6 +12,7 @@ public class ElevatorRideEffect : MonoBehaviour
     [Header("상태 변수")]
     private bool isMoving = true;
 
+
     private void Awake()
     {
         initialPosition = transform.localPosition;
@@ -33,11 +34,11 @@ public class ElevatorRideEffect : MonoBehaviour
         transform.localPosition = initialPosition + new Vector3(x, y, 0f);
     }
 
-    public void StopElevator() // 엘리베이터를 이동을 멈추는 함수
+    public void StopElevator() // 엘리베이터 이동 연출을 중지하는 함수
     {
         isMoving = false;
         transform.localPosition = initialPosition;
-        if (SoundManager.Instance != null)
+        if (SoundManager.HasInstance)
         {
             SoundManager.Instance.StopAmbience();
             SoundManager.Instance.PlayElevatorFinishSound();

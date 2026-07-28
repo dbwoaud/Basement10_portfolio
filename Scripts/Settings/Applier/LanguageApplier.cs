@@ -5,10 +5,10 @@ using UnityEngine.Localization.Settings;
 
 public class LanguageApplier : SettingApplierBase
 {
-    private string pendingLocaleCode;
+    private string pendingLocaleCode; // 현재 설정 언어 코드
     private Coroutine applyRoutine;
 
-    protected override void Apply(GameSetting settings)
+    protected override void Apply(GameSetting settings) // 게임 설정을 적용하는 함수
     {
         pendingLocaleCode = settings.languageCode;
 
@@ -18,15 +18,13 @@ public class LanguageApplier : SettingApplierBase
         if (applyRoutine != null)
             StopCoroutine(applyRoutine);
 
-        applyRoutine = StartCoroutine(ApplyWhenReady());
+        applyRoutine = StartCoroutine(ApplyCoroutine());
     }
 
-    private IEnumerator ApplyWhenReady()
+    private IEnumerator ApplyCoroutine() // 게임 설정을 적용하는 코루틴 
     {
         if (!LocalizationSettings.HasSettings)
         {
-            Debug.LogError("[번역] LocalizationSettings 에셋이 없습니다. " +
-                           "Edit > Project Settings > Localization에서 생성하세요.");
             applyRoutine = null;
             yield break;
         }
@@ -37,17 +35,13 @@ public class LanguageApplier : SettingApplierBase
         applyRoutine = null;
     }
 
-    private static void SelectLocale(string localeCode)
+    public static void SelectLocale(string localeCode) // 언어를 선택하는 함수
     {
         Locale target = LocalizationSettings.AvailableLocales.GetLocale(new LocaleIdentifier(localeCode));
 
         if (target == null)
-        {
-            Debug.LogWarning($"[번역] '{localeCode}' 로케일이 없습니다. " +
-                             "Localization Settings의 Available Locales를 확인하세요.");
             return;
-        }
-
+        
         if (LocalizationSettings.SelectedLocale == target)
             return;
 

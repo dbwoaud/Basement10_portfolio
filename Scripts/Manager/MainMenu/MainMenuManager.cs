@@ -8,6 +8,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private ElevatorRideEffect rideEffect;
     [SerializeField] private string nextSceneName = "StoryMode";
 
+
     private void Awake()
     {
         if (rideEffect == null)
@@ -16,7 +17,7 @@ public class MainMenuManager : MonoBehaviour
 
     private void Start()
     {
-        if (FadeManager.Instance != null)
+        if (FadeManager.HasInstance)
             FadeManager.Instance.SetAllBackground(false);
     }
 
@@ -34,7 +35,7 @@ public class MainMenuManager : MonoBehaviour
 
         yield return new WaitForSeconds(1.0f);
 
-        if (FadeManager.Instance != null)
+        if (FadeManager.HasInstance)
         {
             FadeManager.Instance.FadeIn(1.5f);
             yield return new WaitUntil(() => !FadeManager.Instance.isFading);

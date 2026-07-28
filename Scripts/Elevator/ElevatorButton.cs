@@ -11,6 +11,7 @@ public class ElevatorButton : MonoBehaviour
 
     public static event Action<bool> OnPlayerNearButton;
 
+
     private void Awake()
     {
         AutoBindUI();
@@ -20,13 +21,11 @@ public class ElevatorButton : MonoBehaviour
     {
         if (isPlayerInTrigger && Input.GetKeyDown(KeyCode.F))
         {
-            if (elevatorController != null)
-            {
-                if (SoundManager.Instance != null)
-                    SoundManager.Instance.PlayButtonSound();
+            if (SoundManager.HasInstance)
+                SoundManager.Instance.PlayButtonSound();
 
+            if (elevatorController != null)
                 elevatorController.StartCoroutine(elevatorController.SetDoors(true));
-            }
         }
     }
 
@@ -47,6 +46,7 @@ public class ElevatorButton : MonoBehaviour
             OnPlayerNearButton?.Invoke(false);
         }
     }
+
     private void AutoBindUI() // UI 자동화 함수
     {
         if (elevatorController == null)

@@ -1,35 +1,26 @@
 using System;
 using System.Collections;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// 텍스트를 한 글자씩 출력하는 연출.
-///
-/// 기존에는 BaseEndingUIManager.TypeTextCoroutine과
-/// StoryModeUIManager.TypeMonologue가 거의 같은 코드로 존재했다.
-/// 후자만 개행 문자에서 더 오래 쉬는 차이가 있었는데, 이 차이는 파라미터로 흡수했다.
-///
-/// 일시정지(timeScale = 0) 중에도 독백이 진행되어야 하므로
-/// WaitForSecondsRealtime을 쓴다(기존 두 구현 모두 동일).
-/// </summary>
 [RequireComponent(typeof(Text))]
 public class TypewriterText : MonoBehaviour
 {
     [SerializeField] private Text target;
 
-    [Header("속도")]
+    [Header("텍스트 연출 속도")]
     [SerializeField] private float charInterval = 0.05f;
-    [Tooltip("개행 문자에서 추가로 쉬는 시간.")]
     [SerializeField] private float newlineInterval = 0.2f;
 
-    [Header("유지 시간")]
-    [Tooltip("출력이 끝난 뒤 텍스트를 남겨 두는 시간.")]
+    [Header("텍스트 연출 유지 시간")]
     [SerializeField] private float holdDuration = 2.0f;
 
     private Coroutine routine;
 
+    private readonly StringBuilder builder = new StringBuilder(256);
     public bool IsTyping => routine != null;
+
 
     private void Awake()
     {
@@ -37,8 +28,7 @@ public class TypewriterText : MonoBehaviour
             target = GetComponent<Text>();
     }
 
-    /// <summary>한 줄을 출력하고 holdDuration 만큼 유지한 뒤 지운다.</summary>
-    public Coroutine Play(string content, Action onComplete = null)
+    public Coroutine Play(string content, Action onComplete = null) // 텍스트 연출을 수행하는 코루틴
     {
         gameObject.SetActive(true);
         Stop();
@@ -46,8 +36,7 @@ public class TypewriterText : MonoBehaviour
         return routine;
     }
 
-    /// <summary>출력만 하고 지우지 않는다. 엔딩 독백처럼 호출부가 흐름을 제어할 때 쓴다.</summary>
-    public Coroutine PlayAndKeep(string content, Action onComplete = null)
+    public Coroutine PlayAndKeep(string content, Action onComplete = null) // 지워지지 않는 텍스트 연출을 수행하는 코루틴
     {
         gameObject.SetActive(true);
         Stop();
@@ -55,7 +44,7 @@ public class TypewriterText : MonoBehaviour
         return routine;
     }
 
-    public void Stop()
+    public void Stop() // 현재 코루틴을 중지시키는 함수
     {
         if (routine == null)
             return;
@@ -64,7 +53,7 @@ public class TypewriterText : MonoBehaviour
         routine = null;
     }
 
-    public void Clear()
+    public void Clear() // 현재 텍스트를 초기화하는 함수
     {
         Stop();
 
@@ -72,8 +61,7 @@ public class TypewriterText : MonoBehaviour
             target.text = string.Empty;
     }
 
-    /// <summary>남은 글자를 즉시 모두 표시한다.</summary>
-    public void SkipToEnd(string content)
+    public void SkipToEnd(string content) // 남은 텍스트를 즉시 출력하는 함수
     {
         Stop();
 
@@ -81,7 +69,7 @@ public class TypewriterText : MonoBehaviour
             target.text = content;
     }
 
-    private IEnumerator PlayRoutine(string content, bool clearAfterHold, Action onComplete)
+    private IEnumerator PlayRoutine(string content, bool clearAfterHold, Action onComplete) // 텍스트 연출을 수행하는 코루틴
     {
         if (target == null || string.IsNullOrEmpty(content))
         {
@@ -95,7 +83,8 @@ public class TypewriterText : MonoBehaviour
 
         foreach (char letter in content)
         {
-            target.text += letter;
+            builder.Append(letter);
+            target.text = builder.ToString();
             yield return new WaitForSecondsRealtime(letter == '\n' ? newlineInterval : charInterval);
         }
 
@@ -104,6 +93,7 @@ public class TypewriterText : MonoBehaviour
 
         if (clearAfterHold)
         {
+            builder.Clear();
             target.text = string.Empty;
             target.gameObject.SetActive(false);
         }

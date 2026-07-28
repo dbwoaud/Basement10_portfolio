@@ -13,10 +13,10 @@ public class CreateAbnormalData : AbnormalData
         public Vector3 spawnScale; // 생성할 크기
     }
 
-    [Header("스폰 설정 리스트")]
+    [Header("생성 대상 오브젝트 리스트 ")]
     public List<SpawnInfo> spawnList = new List<SpawnInfo>();
 
-    public override void ApplyAbnormal(GameObject mapRoot)
+    public override void ApplyAbnormal(GameObject mapRoot) // 이상현상을 적용하는 함수
     {
         foreach(SpawnInfo spawnInfo in spawnList)
         {
@@ -28,6 +28,5 @@ public class CreateAbnormalData : AbnormalData
             instance.transform.localEulerAngles = spawnInfo.spawnRotation;
             instance.transform.localScale = spawnInfo.spawnScale;
         }
-
     }
 }

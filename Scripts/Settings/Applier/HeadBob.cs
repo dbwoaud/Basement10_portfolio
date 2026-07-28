@@ -23,7 +23,7 @@ public class HeadBob : SettingApplierBase
             controller = GetComponentInParent<CharacterController>();
     }
 
-    protected override void Apply(GameSetting settings)
+    protected override void Apply(GameSetting settings) // 게임 설정을 적용하는 함수
     {
         shakeScale = settings.cameraShake;
         if (shakeScale <= 0f)

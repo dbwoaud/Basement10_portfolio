@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class DisplayApplier : SettingApplierBase
 {
-    protected override void Apply(GameSetting settings)
+    protected override void Apply(GameSetting settings) // 게임 설정을 적용하는 함수
     {
         int modeIndex = Mathf.Clamp(settings.displayModeIndex, 0, DisplayOptions.DisplayModes.Length - 1);
         FullScreenMode mode = DisplayOptions.DisplayModes[modeIndex];

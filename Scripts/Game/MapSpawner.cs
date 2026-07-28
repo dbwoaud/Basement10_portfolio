@@ -2,66 +2,57 @@ using UnityEngine;
 
 public class MapSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject normalMapPrefab;
-    [SerializeField] private GameObject finalMapPrefab;
-    [SerializeField] private Vector3 finalMapOffset = new Vector3(0f, 0f, -5f);
+    [Header("맵 생성 설정")]
+    [SerializeField] private GameObject normalMapPrefab; // 일반 맵 프리팹
+    [SerializeField] private GameObject finalMapPrefab; // 마지막 맵 프리팹
+    [SerializeField] private Vector3 finalMapOffset = new Vector3(0f, 0f, -5f); // 마지막 맵 생성 오프셋
+    
+    public GameObject CurrentMap { get; private set; } // 현재맵
+    public AbnormalData CurrentAbnormal { get; private set; } // 현재 이상현상
+    public bool HasAbnormal => CurrentAbnormal != null; // 현재 이상현상 여부
 
-    public GameObject CurrentMap { get; private set; }
-    public AbnormalData CurrentAbnormal { get; private set; }
-    public bool HasAbnormal => CurrentAbnormal != null;
 
-    public void Spawn(FloorRule.MapPlan plan, Transform spawnPoint)
+    public void Spawn(FloorRule.MapInfo plan, Transform spawnPoint) // 맵을 생성하는 함수
     {
         Clear();
-
         Vector3 spawnPos = spawnPoint.position;
         if (plan.UseFinalMap)
-        {
             spawnPos += finalMapOffset;
-        }
-
+        
         GameObject prefabToSpawn = plan.UseFinalMap ? finalMapPrefab : normalMapPrefab;
         if (prefabToSpawn == null)
         {
-            Debug.LogError("MapSpawner: Prefab to spawn is not assigned.");
+#if UNITY_EDITOR
+            Debug.LogError("MapSpawner: 생성할 맵 프리팹이 할당되지 않았습니다.", this);
+#endif
             return;
         }
 
         CurrentMap = Instantiate(prefabToSpawn, spawnPos, spawnPoint.rotation);
-
         if (plan.AllowAbnormal)
         {
             if (SpawnAbnormalManager.HasInstance)
             {
                 SpawnAbnormalManager.Instance.mapRoot = CurrentMap;
                 CurrentAbnormal = SpawnAbnormalManager.Instance.SelectAbnormal();
-                if (CurrentAbnormal != null)
-                {
-                    Debug.Log("이상현상 번호: " + CurrentAbnormal.abnormalName + "\n 이상현상 설명: " + CurrentAbnormal.abnormalDescription);
-                }
-                else
-                {
-                    Debug.Log("이번 루프에는 이상현상이 발생하지 않습니다.");
-                }
             }
         }
         else
-        {
             CurrentAbnormal = null;
-        }
     }
 
-    public void Clear()
+    public void Clear() // 현재 맵을 초기화하는 함수
     {
         if (CurrentMap != null)
         {
+            CurrentMap.SetActive(false);
             Destroy(CurrentMap);
             CurrentMap = null;
         }
         CurrentAbnormal = null;
     }
 
-    public void UpdateFloorDisplay(int floor, bool visible)
+    public void UpdateFloorDisplay(int floor, bool visible) // 현재 층을 맵에 생성하는 함수
     {
         if (CurrentMap == null)
             return;
@@ -70,13 +61,9 @@ public class MapSpawner : MonoBehaviour
         if (display != null)
         {
             if (visible)
-            {
                 display.SetFloorNumber(floor);
-            }
-            else
-            {
+            else 
                 display.ResetFloorNumber();
-            }
         }
     }
 }

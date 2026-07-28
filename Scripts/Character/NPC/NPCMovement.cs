@@ -7,19 +7,19 @@ using UnityEngine.AI;
 public class NPCMovement : MonoBehaviour
 {
     [Header("이동 설정")]
-    [SerializeField] private float walkSpeed = 4.0f;
     [SerializeField] private Transform[] waypoints;
-    [SerializeField] private FootstepController footstepController;
-    [SerializeField] private NavMeshAgent navMeshAgent;
     [SerializeField] private int currentWaypoint = 0;
+    [SerializeField] private FootstepController footstepController;
+    [SerializeField] private float walkSpeed = 4.0f;
+    [SerializeField] private NavMeshAgent navMeshAgent;
 
     [Header("애니메이션 설정")]
     [SerializeField] private Animator animator;
     public bool opening = false;
 
-    [Header("이상현상 설정")]
-    [SerializeField] private bool isMuted = false;
-    [SerializeField] private bool isDoubleSound = false;
+    [Header("회전 연출 설정")]
+    [SerializeField] private float lookRotationSpeed = 2.0f;
+
 
     private void Awake()
     {
@@ -60,7 +60,14 @@ public class NPCMovement : MonoBehaviour
             footstepController = GetComponent<FootstepController>();
     }
 
-    private void CheckWayPointArrival() // NPC가 체크포인트에 도달했는지 확인하는 함수
+    private void SetDestinationToCurrentWaypoint() // NPC의 NavMeshAgent 목적지를 설정하는 함수
+    {
+        navMeshAgent.updatePosition = true;
+        navMeshAgent.updateRotation = true;
+        navMeshAgent.SetDestination(waypoints[currentWaypoint].position);
+    }
+
+    private void CheckWayPointArrival() // NPC가 체크포인트에 도달했는지 확인하고 관련 동작을 수행하는 함수
     {
         if (navMeshAgent.pathPending)
             return;
@@ -80,29 +87,16 @@ public class NPCMovement : MonoBehaviour
         SetDestinationToCurrentWaypoint();
     }
 
-    private void SetDestinationToCurrentWaypoint() // NPC의 NavMeshAgent 목적지를 설정하는 함수
-    {
-        navMeshAgent.updatePosition = true;
-        navMeshAgent.updateRotation = true;
-        navMeshAgent.SetDestination(waypoints[currentWaypoint].position);
-    }
-
     private void HandleFootsteps() // NPC의 발자국 소리를 설정하는 함수
     {
         bool isMoving = navMeshAgent.velocity.magnitude > 0.1f && !navMeshAgent.isStopped;
         footstepController.CalculateAndPlayFootstep(isMoving);
     }
 
-    public void SetAbnormalStatus(bool mute, bool doubleSound) // NPC의 이상 현상을 설정하는 함수
-    {
-        isMuted = mute;
-        isDoubleSound = doubleSound;
-    }
-
-    private void UpdateAnimator() // 다음 애니메이션을 재생하도록 변수를 설정하는 함수
+    private void UpdateAnimator() // 애니메이션을 업데이트하는 함수
     {
         if (animator != null)
-            animator.SetBool("Opening", opening);
+            animator.SetBool(AnimatorParams.Opening, opening);
     }
 
     public void LookAtTarget(Vector3 targetPos) // NPC가 특정 위치를 바라보게 만드는 함수
@@ -119,18 +113,12 @@ public class NPCMovement : MonoBehaviour
             yield break;
 
         Quaternion targetRotation = Quaternion.LookRotation(dir);
-        float rotationSpeed = 2.0f;
         while (Quaternion.Angle(transform.rotation, targetRotation) > 0.1f)
         {
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * lookRotationSpeed);
             yield return null; 
         }
 
         transform.rotation = targetRotation;
-    }
-
-    public void UpdateAnimator(Animator newAnimator) // 애니메이터를 설정하는 함수
-    {
-        animator = newAnimator;
     }
 }

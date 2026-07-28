@@ -4,7 +4,6 @@ using UnityEngine;
 public class GameSetting
 {
     public const int CurrentVersion = 2;
-
     public const float MinSensitivity = 0.5f;
     public const float MaxSensitivity = 10f;
 
@@ -37,13 +36,14 @@ public class GameSetting
     public float cameraAccel = 0f;
     public float cameraShake = 0.6f;
 
+
     public GameSetting Clone() => (GameSetting)MemberwiseClone(); // 복사본을 생성하는 함수
 
     public static GameSetting CreateDefault() // 시스템 언어를 기본값으로 설정하는 함수
     {
         return new GameSetting
         {
-            languageCode = GameLanguages.FromSystemLanguage(Application.systemLanguage)
+            languageCode = GameLanguages.SetLanguageOnSystem(Application.systemLanguage)
         };
     }
 
@@ -84,14 +84,5 @@ public class GameSetting
             && Mathf.Approximately(mouseSensitivity, other.mouseSensitivity)
             && Mathf.Approximately(cameraAccel, other.cameraAccel)
             && Mathf.Approximately(cameraShake, other.cameraShake);
-    }
-
-    public bool IsDisplayChangedFrom(GameSetting other) // 해상도나 창모드가 달라졌는지 확인하는 함수
-    {
-        if (other == null)
-            return false;
-
-        return resolutionIndex != other.resolutionIndex
-            || displayModeIndex != other.displayModeIndex;
     }
 }

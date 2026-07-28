@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public enum TriggerType { Exit, Return }
+public enum TriggerType { Exit, Return } // 엘리베이터 종류
 
 public class ElevatorController : MonoBehaviour
 {
@@ -25,7 +25,6 @@ public class ElevatorController : MonoBehaviour
     [SerializeField] private bool isSequenceRunning = false;
     [SerializeField] private bool ignoreFirstTrigger = false;
     [SerializeField] private Collider innerTriggerCollider;
-    public bool isOpen {  get; private set; }
 
     [Header("연출 설정")]
     [SerializeField] private Transform standPoint;
@@ -33,7 +32,10 @@ public class ElevatorController : MonoBehaviour
 
     private CameraLook cameraLook;
 
+    public bool isOpen { get; private set; }
+
     public static event Action<TriggerType> OnElevatorAnswerSelected;
+
 
     private void Awake()
     {
@@ -43,20 +45,6 @@ public class ElevatorController : MonoBehaviour
     private void Start()
     {
         InitializePlayerRef();      
-    }
-
-    private void InitializePlayerRef()
-    {
-        if (playerMovement == null)
-        {
-            playerMovement = FindAnyObjectByType<PlayerMovement>();
-            if (playerMovement != null)
-            {
-                playerTransform = playerMovement.transform;
-                if (Vector3.Distance(transform.position, playerTransform.position) < detectionDistance)
-                    ignoreFirstTrigger = true;
-            }
-        }
     }
 
     public void InitializeFirstTriggerState(Vector3 playerPosition)
@@ -71,7 +59,7 @@ public class ElevatorController : MonoBehaviour
         if (playerTransform == null || isSequenceRunning) 
             return;
 
-        HandleProximityLogic();
+        HandleElevatorLogic();
     }
 
     private void OnDisable()
@@ -99,10 +87,23 @@ public class ElevatorController : MonoBehaviour
             standPoint = transform.Find("StandPoint");
     }
 
-    public void PlayerEnteredInnerTrigger() // 플레이어가 엘리베이터 안쪽 영역에 닿을 때 실행되는 함수
+    private void InitializePlayerRef() // 플레이어 참조를 초기화하는 함수(엘리베이터 첫 트리거 무시)
+    {
+        if (playerMovement == null)
+        {
+            playerMovement = FindAnyObjectByType<PlayerMovement>();
+            if (playerMovement != null)
+            {
+                playerTransform = playerMovement.transform;
+                if (Vector3.Distance(transform.position, playerTransform.position) < detectionDistance)
+                    ignoreFirstTrigger = true;
+            }
+        }
+    }
+
+    public void PlayerEnteredInnerTrigger() // 플레이어가 엘리베이터 안쪽 트리거에 진입 시 실행되는 함수
     {
         InitializePlayerRef();
-
         if (ignoreFirstTrigger)
             return;
 
@@ -110,12 +111,12 @@ public class ElevatorController : MonoBehaviour
             StartCoroutine(ElevatorSequenceCoroutine());
     }
 
-    public void PlayerExitedInnerTrigger() // 플레이어가 엘리베이터 안쪽 영역에 나갈 때 실행되는 함수
+    public void PlayerExitedInnerTrigger() // 플레이어가 엘리베이터 안쪽 트리거에서 나갈 때 처음 실행되는 함수
     {
         ignoreFirstTrigger = false;
     }
 
-    private void HandleProximityLogic() // 엘리베이터 로직을 수행하는 함수
+    private void HandleElevatorLogic() // 엘리베이터 로직을 처리하는 함수
     {
         float distance = Vector3.Distance(transform.position, playerTransform.position);
         bool isNear = distance < detectionDistance;
@@ -127,9 +128,10 @@ public class ElevatorController : MonoBehaviour
             StartCoroutine(SetDoors(false));
     }
 
-    private IEnumerator ElevatorSequenceCoroutine() // 엘리베이터 시퀀스를 재생하는 코루틴
+    private IEnumerator ElevatorSequenceCoroutine() // 엘리베이터 진입 시퀀스를 재생하는 코루틴
     {
         isSequenceRunning = true;
+
         if (playerMovement) 
             playerMovement.canMove = false;
 
@@ -140,15 +142,14 @@ public class ElevatorController : MonoBehaviour
         yield return moveCoroutine;
         yield return doorCoroutine;
    
-
-        if (SoundManager.Instance != null)
+        if (SoundManager.HasInstance)
             SoundManager.Instance.StopAllSound();
 
         FootstepController[] allFootsteps = FindObjectsByType<FootstepController>();
         foreach (var fc in allFootsteps)
             fc.StopFootsteps();
 
-        if (FadeManager.Instance != null)
+        if (FadeManager.HasInstance)
         { 
             FadeManager.Instance.FadeIn();
             yield return new WaitUntil(() => !FadeManager.Instance.isFading);
@@ -165,7 +166,7 @@ public class ElevatorController : MonoBehaviour
         isSequenceRunning = false;
     }
 
-    public IEnumerator SetDoors(bool shouldOpen) // 엘리베이터 문을 설정하는 함수
+    public IEnumerator SetDoors(bool shouldOpen) // 엘리베이터 문 연출을 재생하는 코루틴
     {
         if (isOpen == shouldOpen || isAnimating) 
             yield break;
@@ -180,7 +181,7 @@ public class ElevatorController : MonoBehaviour
         isAnimating = false;
     }
 
-    private IEnumerator MovePlayerToStandPoint() // 플레이어를 엘리베이터 중앙에 위치시키고, 정면을 바라보게 하는 함수
+    private IEnumerator MovePlayerToStandPoint() // 엘레베이터에 플레이어 입장 시 연출을 재생하는 코루틴 
     {
         if (playerTransform == null || standPoint == null)
             yield break;
@@ -202,7 +203,6 @@ public class ElevatorController : MonoBehaviour
         Quaternion startCamRot = (camTransform != null) ? camTransform.localRotation : Quaternion.identity;
 
         float elapsed = 0f;
-
         while (elapsed < standPointMoveDuration)
         {
             elapsed += Time.deltaTime;
@@ -228,18 +228,16 @@ public class ElevatorController : MonoBehaviour
 
     private void UpdateAnimators(bool state) // 엘리베이터 애니메이션을 업데이트하는 함수
     {
-        if (parentAnimator != null) 
-            parentAnimator.SetBool("mainDoorOpen", state);
+        if (parentAnimator != null)
+            parentAnimator.SetBool(AnimatorParams.MainDoorOpen, state);
 
-        if (animator != null) 
-            animator.SetBool("elevatorDoorOpen", state);
+        if (animator != null)
+            animator.SetBool(AnimatorParams.ElevatorDoorOpen, state);
     }
 
     private void PlayDoorSound() // 엘리베이터 문 효과음을 재생하는 함수
     {
-        if (SoundManager.Instance != null)
+        if (SoundManager.HasInstance)
             SoundManager.Instance.PlayElevatorDoorSound();
     }
-
-
 }

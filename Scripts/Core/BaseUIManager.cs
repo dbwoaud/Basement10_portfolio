@@ -7,6 +7,7 @@ public abstract class BaseUIManager<T> : MonoBehaviour where T : BaseUIManager<T
     public static T Instance => instance;
     public static bool HasInstance => instance != null;
 
+
     protected virtual void Awake()
     {
         if (instance != null && instance != this)

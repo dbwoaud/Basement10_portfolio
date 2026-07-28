@@ -6,15 +6,13 @@ using UnityEngine.UI;
 
 public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
 {
-    [Header("UI")]
+    [Header("UI 요소")]
     [SerializeField] private Text elevatorText;
     [SerializeField] private GameObject menuUI;
     [SerializeField] private SettingPanel settingPanel;
 
-    [Header("����")]
+    [Header("텍스트 설정")]
     [SerializeField] private TypewriterText monologueTypewriter;
-
-    [Tooltip("�ε��� 0�� ���� ��(10��), ���� �� ���� ��������. Story ���̺��� Ű.")]
     [SerializeField]
     private string[] monologueKeys =
     {
@@ -23,21 +21,20 @@ public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
         "story.monologue.floor4",  "story.monologue.floor3", "story.monologue.floor2",
         "story.monologue.floor1",  "story.monologue.floor0",
     };
-
-    [Tooltip("�������� ���� ���� �ǵ��ƿ��� �� �������� �ϳ��� ����Ѵ�.")]
     [SerializeField]
     private string[] loopResetKeys =
     {
         "story.loopReset.0", "story.loopReset.1", "story.loopReset.2",
     };
 
-    [Header("�� ��ȯ")]
+    [Header("씬 설정")]
     [SerializeField] private string mainMenuSceneName = "MainMenu";
 
     private PlayerMovement playerMovement;
     private bool menuActivated;
 
-    protected override void AutoBindUI()
+
+    protected override void AutoBindUI() // UI 자동화 함수
     {
         if (menuUI == null)
             menuUI = UIBinder.FindObject(transform, "MenuUI");
@@ -73,7 +70,7 @@ public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
             settingPanel.Closed += OnSettingClosed;
     }
 
-    protected override void InitializeUI()
+    protected override void InitializeUI() // UI 초기화 함수
     {
         if (menuUI != null)
             menuUI.SetActive(false);
@@ -122,7 +119,6 @@ public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
         if (!Input.GetKeyDown(KeyCode.Escape))
             return;
 
-        // ���� �г��� ���� ������ ������ �Է��� �Һ��Ѵ�.
         if (settingPanel != null && settingPanel.HandleCancelInput())
             return;
 
@@ -130,9 +126,7 @@ public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
         ToggleMenu(menuActivated);
     }
 
-    // ���� ���� ��������������������������������������������������������������������������������������������
-
-    private void HandleFloorFirstVisited(int floor)
+    private void HandleFloorFirstVisited(int floor) // 최초 층 방문을 처리하는 함수
     {
         int index = 10 - floor;
 
@@ -142,7 +136,7 @@ public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
         ShowMonologue(monologueKeys[index]);
     }
 
-    private void HandleLoopReset()
+    private void HandleLoopReset() // 오답 선택 후 10층 이동 시 실행되는 함수
     {
         if (loopResetKeys == null || loopResetKeys.Length == 0)
             return;
@@ -150,7 +144,7 @@ public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
         ShowMonologue(loopResetKeys[Random.Range(0, loopResetKeys.Length)]);
     }
 
-    private void ShowMonologue(string key)
+    private void ShowMonologue(string key) // 독백창을 출력하는 함수
     {
         if (monologueTypewriter == null)
             return;
@@ -158,21 +152,18 @@ public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
         monologueTypewriter.Play(Loc.Story(key));
     }
 
-    // ���� �޴� ��������������������������������������������������������������������������������������������
-
-    private void ToggleInteractionText(bool isVisible)
+    private void ToggleInteractionText(bool isVisible) // 상호작용 텍스트를 토글하는 함수
     {
         if (elevatorText != null)
             elevatorText.gameObject.SetActive(isVisible);
     }
 
-    private void ToggleMenu(bool isVisible)
+    private void ToggleMenu(bool isVisible) // 메뉴창을 토글하는 함수
     {
         if (menuUI == null)
             return;
 
         menuUI.SetActive(isVisible);
-
         Cursor.lockState = isVisible ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = isVisible;
 
@@ -190,14 +181,14 @@ public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
         Time.timeScale = isVisible ? 0f : 1f;
     }
 
-    public void OnClickContinue()
+    public void OnClickContinue() // 계속하기 버튼 클릭 시 실행되는 함수
     {
         PlayButtonSound();
         menuActivated = false;
         ToggleMenu(menuActivated);
     }
 
-    public void OnClickSetting()
+    public void OnClickSetting() // 설정 버튼 클릭 시 실행되는 함수
     {
         PlayButtonSound();
 
@@ -210,27 +201,24 @@ public class StoryModeUIManager : BaseUIManager<StoryModeUIManager>
         settingPanel.Open();
     }
 
-    private void OnSettingClosed()
+    private void OnSettingClosed() // 세팅 닫기 버튼 클릭 시 실행되는 함수
     {
         if (menuUI != null)
             menuUI.SetActive(menuActivated);
     }
 
-    public void OnClickGoToTitle()
+    public void OnClickGoToTitle() // 메인메뉴 이동 버튼 클릭 시 실행되는 함수
     {
         PlayButtonSound();
 
         if (SoundManager.HasInstance)
             SoundManager.Instance.StopAllSound();
 
-        // ���� �ѱ�� ���� �ݵ�� �ǵ����� ���� ���� ���� ä�� �������� �ʴ´�.
         Time.timeScale = 1f;
-        
-
         SceneManager.LoadScene(mainMenuSceneName);
     }
 
-    public void OnClickExit()
+    public void OnClickExit() // 나가기 버튼 클릭 시 실행되는 함수
     {
         PlayButtonSound();
         Time.timeScale = 1f;

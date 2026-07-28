@@ -4,6 +4,7 @@ public class ElevatorTrigger : MonoBehaviour
 {
     [SerializeField] private ElevatorController elevatorController;
 
+
     private void Awake()
     {
         AutoBindUI();
@@ -28,7 +29,7 @@ public class ElevatorTrigger : MonoBehaviour
         
     }
 
-    private void AutoBindUI() // UI �ڵ�ȭ �Լ�
+    private void AutoBindUI() // UI 자동화 함수
     {
         if (elevatorController == null)
             elevatorController = GetComponentInParent<ElevatorController>();

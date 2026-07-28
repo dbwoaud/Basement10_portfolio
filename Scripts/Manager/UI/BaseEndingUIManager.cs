@@ -7,15 +7,13 @@ public abstract class BaseEndingUIManager<T> : BaseUIManager<T> where T : BaseEn
     [Header("엔딩 공통 UI")]
     [SerializeField] protected GameObject endingPanel;
     [SerializeField] protected TypewriterText typewriter;
-
-    [Tooltip("출력할 독백의 Story 테이블 키를 순서대로 넣는다.")]
     [SerializeField] protected string[] monologueKeys;
-
     [SerializeField] private float lineGapDuration = 1.0f;
 
     protected abstract string EndingPanelName { get; }
 
-    protected override void AutoBindUI()
+
+    protected override void AutoBindUI() // UI 자동화 함수
     {
         if (endingPanel == null)
             endingPanel = UIBinder.FindObject(transform, EndingPanelName);
@@ -34,7 +32,7 @@ public abstract class BaseEndingUIManager<T> : BaseUIManager<T> where T : BaseEn
             typewriter = text.gameObject.AddComponent<TypewriterText>();
     }
 
-    protected override void InitializeUI()
+    protected override void InitializeUI() // UI 초기화 함수
     {
         if (endingPanel != null)
             endingPanel.SetActive(false);
@@ -43,8 +41,10 @@ public abstract class BaseEndingUIManager<T> : BaseUIManager<T> where T : BaseEn
             typewriter.Clear();
     }
 
-    public IEnumerator PlayMonologueSequence()
+    public IEnumerator PlayMonologueSequence() // 독백 연출을 재생하는 코루틴
     {
+        yield return Loc.EnsureReady();
+
         if (endingPanel != null)
         {
             endingPanel.SetActive(true);
@@ -67,5 +67,5 @@ public abstract class BaseEndingUIManager<T> : BaseUIManager<T> where T : BaseEn
         OnMonologueFinished();
     }
 
-    protected abstract void OnMonologueFinished();
+    protected abstract void OnMonologueFinished(); // 독백 연출 완료 시 실행되는 함수
 }

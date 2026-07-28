@@ -1,12 +1,11 @@
 using UnityEngine;
 
-public enum TargetType { Player, NPC }
-public enum SoundMode { Mute, Double }
+public enum TargetType { Player, NPC } // 이상현상 대상
+public enum SoundMode { Mute, Double } // 사운드 이상현상 종류
 
 [CreateAssetMenu(fileName = "SoundAbnormalData", menuName = "Abnormal/SoundType")]
 public class SoundAbnormalData : AbnormalData
 {
-
     [Header("사운드 이상 현상 설정")]
     public TargetType targetType; 
     public SoundMode soundMode;
@@ -24,6 +23,7 @@ public class SoundAbnormalData : AbnormalData
         else
             ApplyToNPC(isMute, isDouble);
     }
+
     private static void ApplyToPlayer(bool isMute, bool isDouble) // 플레이어의 사운드 이상 현상을 적용하는 함수
     {
         PlayerMovement player = FindAnyObjectByType<PlayerMovement>();
@@ -42,23 +42,5 @@ public class SoundAbnormalData : AbnormalData
 
         if (npc.TryGetComponent(out FootstepController footstep))
             footstep.SetAbnormalStatus(isMute, isDouble);
-
-        npc.SetAbnormalStatus(isMute, isDouble);
-    }
-
-    private NPCMovement ResolveNPC(GameObject mapRoot) // 맵 안의 NPC 이동 컴포넌트를 찾는 함수
-    {
-        if (!string.IsNullOrEmpty(targetName))
-        {
-            Transform target = FindTarget(mapRoot, targetName);
-            if (target != null)
-            {
-                NPCMovement found = target.GetComponentInChildren<NPCMovement>();
-                if (found != null)
-                    return found;
-            }
-        }
-
-        return FindAnyObjectByType<NPCMovement>();
     }
 }

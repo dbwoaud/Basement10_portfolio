@@ -75,7 +75,7 @@ public class CameraLook : SettingApplierBase
         transform.localRotation = Quaternion.identity;
     }
 
-    public void ResyncFromTransforms()
+    public void ResyncFromTransforms() // 피치 각도를 정규화하는 함수
     {
         pitch = NormalizeAngle(transform.localEulerAngles.x);
     }

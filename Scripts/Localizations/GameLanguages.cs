@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public static class GameLanguages
@@ -8,12 +7,13 @@ public static class GameLanguages
     public const string Japanese = "ja";
     public const string ChineseSimplified = "zh-Hans";
 
-    public static readonly string[] Supported =
+    public static readonly string[] Supported = // 지원 언어
     {
         Korean, English, Japanese, ChineseSimplified
     };
 
-    public static string ToDisplayName(string localeCode) // 지역에 따라 언어 텍스트를 반환하는 함수
+
+    public static string GetLanguageName(string localeCode) // 국가의 언어명을 반환하는 함수
     {
         switch (localeCode)
         {
@@ -44,7 +44,7 @@ public static class GameLanguages
         return false;
     }
 
-    public static string FromSystemLanguage(SystemLanguage system) // 시스템 언어에 따라 언어를 설정하는 함수
+    public static string SetLanguageOnSystem(SystemLanguage system) // 시스템 언어에 따라 언어를 설정하는 함수
     {
         switch (system)
         {

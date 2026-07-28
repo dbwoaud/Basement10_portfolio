@@ -6,7 +6,8 @@ public class GraphicPresetApplier : SettingApplierBase
     [SerializeField] private bool overrideShadowDistance = false;
     [SerializeField] private float[] shadowDistances = { 20f, 35f, 50f, 80f, 120f, 160f };
 
-    protected override void Apply(GameSetting settings)
+
+    protected override void Apply(GameSetting settings) // 게임 설정을 적용하는 함수
     {
         int level = Mathf.Clamp(settings.qualityLevel, 0, GameSetting.QualityLevelCount - 1);
         QualitySettings.SetQualityLevel(level, applyExpensiveChanges: false);

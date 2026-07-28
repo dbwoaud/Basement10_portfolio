@@ -11,9 +11,10 @@ public class EndingCreditManager : MonoBehaviour
     [SerializeField] private string mainMenuScene = "MainMenu";
     [SerializeField] private float transferDuration = 3.0f;
 
+
     private void Start()
     {
-        if (SoundManager.Instance != null && SoundManager.Instance.EndingCreditBGM != null)
+        if (SoundManager.HasInstance && SoundManager.Instance.EndingCreditBGM != null)
             SoundManager.Instance.PlayBGM(SoundManager.Instance.EndingCreditBGM, 0.8f);
     }
 
@@ -28,10 +29,10 @@ public class EndingCreditManager : MonoBehaviour
 
     private IEnumerator ReturnToMainMenuCoroutine() // 메인메뉴로 이동하는 코루틴
     {
-        if (SoundManager.Instance != null)
+        if (SoundManager.HasInstance)
             SoundManager.Instance.StopAllSound();
 
-        if (FadeManager.Instance != null)
+        if (FadeManager.HasInstance)
         {
             FadeManager.Instance.SetBlackBackGround(true);
             FadeManager.Instance.FadeIn(5.0f);

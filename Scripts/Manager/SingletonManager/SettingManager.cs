@@ -21,13 +21,12 @@ public class SettingManager : Singleton<SettingManager>
         if (HasInstance)
             return;
 
-        new GameObject("[SettingManager]").AddComponent<SettingManager>();
+        new GameObject("SettingManager").AddComponent<SettingManager>();
     }
 
     protected override void Awake()
     {
         base.Awake();
-
         if (Instance != this)
             return;
 
@@ -53,7 +52,6 @@ public class SettingManager : Singleton<SettingManager>
         try
         {
             string json = File.ReadAllText(SavePath);
-
             if (string.IsNullOrWhiteSpace(json))
                 return null;
 
@@ -64,9 +62,8 @@ public class SettingManager : Singleton<SettingManager>
 
             return Migrate(loaded);
         }
-        catch (Exception e)
+        catch
         {
-            Debug.LogWarning($"[설정] 파일을 읽지 못해 기본값으로 시작합니다. ({e.Message})");
             QuarantineBrokenFile();
             return null;
         }
@@ -78,10 +75,7 @@ public class SettingManager : Singleton<SettingManager>
             return loaded;
 
         if (loaded.version > GameSetting.CurrentVersion)
-        {
-            Debug.LogWarning("[설정] 더 최신 버전의 파일입니다. 기본값으로 시작합니다.");
             return null;
-        }
 
         int guard = 0;
 
@@ -94,22 +88,16 @@ public class SettingManager : Singleton<SettingManager>
                 case 1:
                     loaded.resolutionIndex = -1;
                     loaded.displayModeIndex = ToDisplayModeIndex(Screen.fullScreenMode);
-                    loaded.languageCode = GameLanguages.FromSystemLanguage(Application.systemLanguage);
+                    loaded.languageCode = GameLanguages.SetLanguageOnSystem(Application.systemLanguage);
                     loaded.version = 2;
                     break;
 
                 default:
-                    Debug.LogWarning($"[설정] 버전 {loaded.version} 변환 경로가 없어 기본값으로 초기화합니다.");
                     return null;
             }
 
-            Debug.Log($"[설정] 저장 버전 {before} → {loaded.version} 변환");
-
             if (++guard > 16)
-            {
-                Debug.LogError("[설정] 마이그레이션이 종료되지 않아 중단합니다.");
                 return null;
-            }
         }
 
         return loaded;
@@ -134,9 +122,9 @@ public class SettingManager : Singleton<SettingManager>
             TryDelete(broken);
             File.Move(SavePath, broken);
         }
-        catch (Exception e)
+        catch
         {
-            Debug.LogWarning($"[설정] 손상 파일 격리 실패: {e.Message}");
+
         }
     }
 
@@ -149,10 +137,6 @@ public class SettingManager : Singleton<SettingManager>
         Current.Validate();
 
         bool saved = WriteToDisk();
-
-        if (!saved)
-            Debug.LogWarning("[설정] 저장에 실패했지만 현재 세션에는 적용됩니다.");
-
         OnSettingsApplied?.Invoke(Current);
         return saved;
     }
@@ -173,9 +157,8 @@ public class SettingManager : Singleton<SettingManager>
 
             return true;
         }
-        catch (Exception e)
+        catch
         {
-            Debug.LogError($"[설정] 저장에 실패했습니다: {e.Message}");
             TryDelete(tempPath);
             return false;
         }
@@ -190,7 +173,7 @@ public class SettingManager : Singleton<SettingManager>
         }
         catch
         {
-            // 정리 실패는 무시한다.
+
         }
     }
 
@@ -201,7 +184,6 @@ public class SettingManager : Singleton<SettingManager>
         TryDelete(SavePath);
         TryDelete(SavePath + TempExtension);
         TryDelete(SavePath + BackupExtension);
-        Debug.Log("[설정] 저장 파일을 삭제했습니다.");
     }
 
     [UnityEditor.MenuItem("Tools/설정/저장 폴더 열기")]

@@ -10,7 +10,8 @@ public class NPCTransformAbnormalData : AbnormalData
     public string smileBlendShapeName = "Smile";
     public float smileTargetWeight = 100f;
 
-    public override void ApplyAbnormal(GameObject mapRoot)
+
+    public override void ApplyAbnormal(GameObject mapRoot) // 이상현상을 적용하는 함수
     {
         Transform target = FindTarget(mapRoot, targetName);
         if (target == null)

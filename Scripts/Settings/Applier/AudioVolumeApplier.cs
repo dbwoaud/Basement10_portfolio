@@ -15,22 +15,19 @@ public class AudioVolumeApplier : SettingApplierBase
     [SerializeField] private string sfxParameter = "SFXVolume";
 
 
-    protected override void Apply(GameSetting settings)
-    {
-        AudioMixer target = ResolveMixer();
+    protected override void Apply(GameSetting settings) // 게임 설정을 적용하는 함수
+    {   
+        AudioMixer target = GetMixer();
 
         if (target == null)
-        {
-            Debug.LogWarning("[설정] AudioMixer가 없어 볼륨을 적용하지 못했습니다.");
             return;
-        }
 
         SetVolume(target, masterParameter, settings.masterVolume);
         SetVolume(target, bgmParameter, settings.bgmVolume);
         SetVolume(target, sfxParameter, settings.sfxVolume);
     }
 
-    private AudioMixer ResolveMixer()
+    private AudioMixer GetMixer()
     {
         if (mixer == null && SoundManager.HasInstance)
             mixer = SoundManager.Instance.Mixer;
@@ -38,7 +35,7 @@ public class AudioVolumeApplier : SettingApplierBase
         return mixer;
     }
 
-    private static void SetVolume(AudioMixer target, string parameter, float linear)
+    private void SetVolume(AudioMixer target, string parameter, float linear) // 오디오 볼륨을 설정하는 함수
     {
         if (string.IsNullOrEmpty(parameter))
             return;
@@ -47,7 +44,6 @@ public class AudioVolumeApplier : SettingApplierBase
             ? MinDecibel
             : Mathf.Log10(Mathf.Clamp01(linear)) * 20f;
 
-        if (!target.SetFloat(parameter, decibel))
-            Debug.LogWarning($"[설정] 믹서 파라미터 '{parameter}'를 찾지 못했습니다.");
+        target.SetFloat(parameter, decibel);
     }
 }

@@ -8,6 +8,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     public static T Instance => isQuitting ? null : instance;
     public static bool HasInstance => !isQuitting && instance != null;
 
+
     protected virtual void Awake()
     {
         if (instance != null && instance != this)

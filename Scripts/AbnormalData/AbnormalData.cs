@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections.Generic;
+
 public abstract class AbnormalData : ScriptableObject
 {
     [Header("기본 정보")]
@@ -10,22 +10,12 @@ public abstract class AbnormalData : ScriptableObject
 
     protected Transform FindTarget(GameObject mapRoot, string targetName) // 이상 현상을 적용할 게임 오브젝트를 탐색하는 함수
     {
-        if(string.IsNullOrEmpty(targetName) || mapRoot == null)
+        if (mapRoot == null)
             return null;
-        
-        Stack<Transform> stack = new Stack<Transform>();
-        stack.Push(mapRoot.transform);
 
-        while (stack.Count > 0)
-        {
-            Transform current = stack.Pop();
-            if (current.name == targetName)
-                return current;
+        if (mapRoot.name == targetName)
+            return mapRoot.transform;
 
-            foreach(Transform child in current)
-                stack.Push(child);
-        }
-
-        return null;
+        return UIBinder.FindTransform(mapRoot.transform, targetName);
     }
 }

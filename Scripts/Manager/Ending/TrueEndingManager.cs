@@ -8,6 +8,7 @@ public class TrueEndingManager : MonoBehaviour
     [SerializeField] private string nextSceneName = "EndingCredit";
     [SerializeField] private float endingWaitTime = 5.0f;
 
+
     private void Start()
     {
         StartCoroutine(TrueEndingCoroutine());
@@ -23,18 +24,15 @@ public class TrueEndingManager : MonoBehaviour
 
     private IEnumerator TrueEndingSequenceCoroutine() // 진엔딩 시퀀스를 재생하는 코루틴
     {
-        if (SoundManager.Instance != null)
+        if (SoundManager.HasInstance)
             SoundManager.Instance.PlayBGM(SoundManager.Instance.EyeOpeningBGM);
 
-        if (FadeManager.Instance != null)
+        if (FadeManager.HasInstance)
         {
             FadeManager.Instance.SetWhiteBackGround(true);
-
             FadeManager.Instance.FlashOut(endingWaitTime);
             yield return new WaitUntil(() => !FadeManager.Instance.isFading);
-
             yield return new WaitForSeconds(endingWaitTime);
-
             FadeManager.Instance.FlashIn(endingWaitTime);
             yield return new WaitUntil(() => !FadeManager.Instance.isFading);
         }
@@ -42,25 +40,25 @@ public class TrueEndingManager : MonoBehaviour
 
     private void SetMonologueSequence() // 독백 출력을 위한 설정을 진행하는 함수
     {
-        if (SoundManager.Instance != null)
+        if (SoundManager.HasInstance)
         {
             SoundManager.Instance.StopAllSound();
             SoundManager.Instance.PlayBGM(SoundManager.Instance.TrueEndingBGM, 0.8f);
         }
 
-        if (FadeManager.Instance != null)
+        if (FadeManager.HasInstance)
             FadeManager.Instance.SetWhiteBackGround(false);
     }
 
     private IEnumerator PlayMonologueCoroutine() // 독백을 재생하는 코루틴
     {
-        if (TrueEndingUIManager.Instance != null)
+        if (TrueEndingUIManager.HasInstance)
             yield return StartCoroutine(TrueEndingUIManager.Instance.PlayMonologueSequence());
     }
 
     private IEnumerator TransitionToNextSceneCoroutine() // 다음 씬으로 이동을 준비하는 코루틴
     {
-        if (FadeManager.Instance != null)
+        if (FadeManager.HasInstance)
         {
             FadeManager.Instance.SetAllBackground(false);
             FadeManager.Instance.SetBlackBackGround(true);

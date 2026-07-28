@@ -45,7 +45,6 @@ public class FootstepController : MonoBehaviour
             return;
 
         SoundManager.Instance.PlaySFX(walkSound, volume);
-
         if (isDoubleSound)
             StartCoroutine(PlayDoubleSoundRoutine());
     }

@@ -11,7 +11,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float gravity = -9.81f;
     [SerializeField] private CharacterController characterController;
     [SerializeField] private FootstepController footstepController;
-    [SerializeField] private Vector3 verticalVelocity;
+    private Vector3 verticalVelocity;
     public bool canMove = true;
 
 
