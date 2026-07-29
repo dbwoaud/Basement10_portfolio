@@ -176,7 +176,7 @@ https://github.com/user-attachments/assets/04e53817-e7cf-4c32-b95b-e62722914501
 - **Cleanup**: `rootBoneName`을 추적해 하위 뼈대 구조를 먼저 제거하고, 기존 `SkinnedMeshRenderer`를 파괴해 메모리 충돌을 방지
 - **Setup**: 새 모델을 인스턴스화한 뒤, 주체가 되는 `Animator`에 새 `Avatar`와 `RuntimeAnimatorController`를 수동 재할당. 자식 오브젝트의 불필요한 `Animator`는 제거해 연산 낭비 감소
 - **Sync**: `Animator.Rebind()`와 `Update(0f)`로 변경된 아바타 정보를 강제 갱신하고, `CrossFadeInFixedTime`으로 기본 상태에 부드럽게 진입
-> 📄 1차 방식 코드: [NPCTransformAbnormalData.cs (초기 버전)](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Abnormal/NPCTransformAbnormalData.cs#L1-L80)
+> 📄 1차 방식 코드: [NPCTransformAbnormalData.cs (초기 버전)](https://github.com/dbwoaud/Basement10_portfolio/blob/e5ac1c0c0a6ba592b8e7c257b6af012b6548442e/Scripts/Abnormal/NPCTransformAbnormalData.cs)
 
 **한계 발견**
 겉보기에는 정상 작동했으나, 재테스트 과정에서 교체된 모델의 **손·팔이 뒤틀리는 현상**이 발생했습니다. 원인을 추적한 결과, 문제는 교체 로직이 아니라 **모델 자체에 있었습니다.**
@@ -195,7 +195,7 @@ https://github.com/user-attachments/assets/30ba07a0-1aa1-4417-9cdb-12219172b8ce
 - **모델 제작**: Blender에서 기본 표정 모델의 얼굴 버텍스를 직접 편집해 `Smile` 블렌드셰이프를 조각. 완전한 Mixamo 스켈레톤을 가진 모델을 베이스로 사용해 리깅 일관성 확보
 - **런타임 제어**: `SkinnedMeshRenderer.SetBlendShapeWeight()`로 표정 가중치를 조절
 - **시스템 통합**: 기존 이상현상 시스템(`AbnormalData` ScriptableObject)에 그대로 결합
-> 📄 2차 방식 전체 코드: [NPCTransformAbnormalData.cs (최종 버전)](https://github.com/dbwoaud/Basement10_portfolio/blob/3b3122561798a61a5972a51668b22467bab13002/Scripts/AbnormalData/NPCTransformAbnormalData/NPCTransformAbnormalData.cs#L1-L29)
+> 📄 2차 방식 전체 코드: [NPCTransformAbnormalData.cs (최종 버전)](https://github.com/dbwoaud/Basement10_portfolio/blob/3b3122561798a61a5972a51668b22467bab13002/Scripts/AbnormalData/NPCTransformAbnormalData/NPCTransformAbnormalData.cs)
 
 **결과**
 - 모델이 하나로 통일되어 **애니메이션 리타게팅 문제 자체가 소멸**
