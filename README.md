@@ -94,7 +94,7 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 - **UI 대응**: `TextSizeSynchronizer`가 언어별 글자 길이 차이에 맞춰 텍스트 크기를 동기화합니다.
 - [🔗 **Loc.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Localizations/Loc.cs)
 - [🔗 **GameLanguages.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Localizations/GameLanguages.cs)
-- - [🔗 **TextSizeSynchronizer.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/UI/TextSizeSynchronizer.cs)
+- [🔗 **TextSizeSynchronizer.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/UI/TextSizeSynchronizer.cs)
 
 ---
 
