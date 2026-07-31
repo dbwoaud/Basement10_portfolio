@@ -218,4 +218,4 @@ https://github.com/user-attachments/assets/30ba07a0-1aa1-4417-9cdb-12219172b8ce
 
 ## **🔗 참조**
 - **Notion**: [[지하 10층 Notion 링크]](https://www.notion.so/10-f31faf7d496e828dab0501cd8dd8dae3)
-- **YouTube**: [[기술 데모 영상 링크]](https://youtu.be/xBqUJMUoHfk)
+- **YouTube**: [[기술 데모 영상 링크]](https://www.youtube.com/watch?v=dkS35WRMzng)
