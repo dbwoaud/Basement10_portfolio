@@ -215,7 +215,7 @@ https://github.com/user-attachments/assets/0ecd40c8-0b8b-4170-bb56-a193d5b9237c
 ---
 
 ## 📐 클래스 다이어그램
-전체 구조는 [**Docs/ClassDiagram.md**](https://github.com/dbwoaud/Basement10_portfolio/blob/f14f7dd19549cb6186779e82b30b252e0f6a1f67/Docs/ClassDiagram.md)에서 확인할 수 있습니다.
+전체 구조는 [**Docs/ClassDiagram.md**](Docs/ClassDiagram.md)에서 확인할 수 있습니다.
 
 ---
 
