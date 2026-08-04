@@ -136,11 +136,11 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
  
 ### 오브젝트 풀링으로 GC 부담 최소화
 `FloorNumberDisplay`에서 층 숫자 오브젝트를 매번 생성/파괴하는 대신, **슬롯 × 숫자(0–9) 조합을 미리 인스턴스화해두고 활성/비활성만 토글**하는 풀링을 적용했습니다. 런타임 중 `Instantiate`/`Destroy` 비용과 GC 스파이크를 제거했습니다.
- 
-https://github.com/user-attachments/assets/ae7a4943-9bc3-466a-b5fc-7c78a4ebda26
 
-https://github.com/user-attachments/assets/04e53817-e7cf-4c32-b95b-e62722914501
- 
+https://github.com/user-attachments/assets/ede305d6-ae27-4c9f-b923-ae368601058a
+
+https://github.com/user-attachments/assets/9a40a006-379f-490a-8833-449d049d41be
+
 - [🔗 **FloorNumberDisplay.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/UI/FloorNumberDisplay.cs)
 
   
@@ -190,7 +190,7 @@ https://github.com/user-attachments/assets/04e53817-e7cf-4c32-b95b-e62722914501
 ### 3. 2차 해결: 블렌드셰이프 기반 단일 모델 (성공)
 **발상 전환**: 모델을 교체하는 대신, **하나의 모델**이 표정만 바꾸도록 하면 리타게팅 불일치가 원천적으로 사라진다고 판단했습니다.
 
-https://github.com/user-attachments/assets/30ba07a0-1aa1-4417-9cdb-12219172b8ce
+https://github.com/user-attachments/assets/0ecd40c8-0b8b-4170-bb56-a193d5b9237c
 
 - **모델 제작**: Blender에서 기본 표정 모델의 얼굴 버텍스를 직접 편집해 `Smile` 블렌드셰이프를 조각. 완전한 Mixamo 스켈레톤을 가진 모델을 베이스로 사용해 리깅 일관성 확보
 - **런타임 제어**: `SkinnedMeshRenderer.SetBlendShapeWeight()`로 표정 가중치를 조절
