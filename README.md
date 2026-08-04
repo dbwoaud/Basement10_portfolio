@@ -60,13 +60,13 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 - [🔗 **GameManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Manager/SingletonManager/GameManager.cs)
 
 
-### **4. 다형성 기반의 이상 현상 시스템**
+### **4. 다형성 기반의 이상현상 시스템**
 
 https://github.com/user-attachments/assets/a653e5a1-3dc7-46de-8197-0c291f981605
 
-- **추상화:** `AbnormalData` 라는 추상 클래스(ScriptableObject)로 모든 이상 현상의 공통 진입점 `ApplyAbnormal`을 정의했습니다.
+- **추상화:** `AbnormalData` 라는 추상 클래스(ScriptableObject)로 모든 이상현상의 공통 진입점 `ApplyAbnormal`을 정의했습니다.
 - **구체화**: 생성(`Create`), 삭제(`Delete`), 교체(`Replace`), 크기 변형(`Scale`), 사운드 변조(`Sound`), NPC 변형(`NPCTransform`) 등 각기 다른 로직을 자식 클래스에 독립적으로 구현했습니다.
-- 새로운 이상 현상을 추가할 때 `SpawnAbnormalManager` 등 기존 시스템 코드를 수정할 필요 없이 클래스와 데이터 에셋만 추가하면 되는 **개방 폐쇄 원칙(OCP)** 을 실천했습니다.
+- 새로운 이상현상을 추가할 때 `SpawnAbnormalManager` 등 기존 시스템 코드를 수정할 필요 없이 클래스와 데이터 에셋만 추가하면 되는 **개방 폐쇄 원칙(OCP)** 을 실천했습니다.
 - [🔗 **AbnormalData.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/AbnormalData/AbnormalData.cs)
 
 
@@ -114,7 +114,7 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 
 ### **2. [데이터 주도] ScriptableObject 기반 설계** 
 - `AbnormalData`를 `ScriptableObject`로 정의해 **로직과 데이터를 분리**했습니다.
-- 새로운 이상 현상 추가 시 코드 수정 없이 데이터 에셋 생성만으로 시스템에 즉시 반영되는 OCP를 실천했습니다.
+- 새로운 이상현상 추가 시 코드 수정 없이 데이터 에셋 생성만으로 시스템에 즉시 반영되는 OCP를 실천했습니다.
 
 
 ### **3. [데이터 주도] 복합 데이터 구조를 활용한 연출 제어**
@@ -129,12 +129,12 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 
 
 ### **5. [시스템 통합] 사운드 · 로직 연동** 
-- 플레이어와 NPC의 발소리 시스템(`FootstepController`)을 이상 현상 데이터와 연동해 **발소리 음소거** 및 **'발소리가 두 번 들리는 현상'** 을 구현했습니다.
+- 플레이어와 NPC의 발소리 시스템(`FootstepController`)을 이상현상 데이터와 연동해 **발소리 음소거** 및 **'발소리가 두 번 들리는 현상'**을 구현했습니다.
 - `NavMeshAgent` 속도에 따라 NPC의 발소리 주기를 실시간 동기화했습니다.
 
 ---
 
-## 📈 최적화 & 성능 계측
+## **📈 최적화 & 성능 계측**
 
  
 ### 오브젝트 풀링으로 GC 부담 최소화
@@ -148,13 +148,13 @@ https://github.com/user-attachments/assets/9a40a006-379f-490a-8833-449d049d41be
 
   
 ### `ProfilerRecorder` 기반 정량 계측 
-성능을 눈으로 직접 확인할 수 있도록, `ProfilerRecorder` API로 **프레임 타임, 배칭 방식별 드로우콜, 삼각형/버텍스, 그림자 캐스터 , GC 할당량**을 0.5초 간격으로 수집해 **CSV로 기록**하는 `PerformanceLogger`를 만들었습니다.
-- 이를 통해 GC 최적화가 유효함을 확인하고, **실제 병목이 렌더링** 임을 정량적으로 진단했습니다.
+성능을 눈으로 직접 확인할 수 있도록, `ProfilerRecorder` API로 **프레임 타임, 배칭 방식별 드로우콜, 삼각형/버텍스, 그림자 캐스터, GC 할당량**을 0.5초 간격으로 수집해 **CSV로 기록**하는 `PerformanceLogger`를 만들었습니다.
+- 이를 통해 GC 최적화가 유효함을 확인하고, **실제 병목이 렌더링**임을 정량적으로 진단했습니다.
 - [🔗 **PerformanceLogger.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Profiling/PerformanceLogger.cs)
 
 ---
 
-## ⚠️ 트러블슈팅: 이상현상 NPC의 외형 전환 구현
+## **⚠️ 트러블슈팅: 이상현상 NPC의 외형 전환 구현**
 
 
 ### 1. 문제 상황
@@ -214,7 +214,7 @@ https://github.com/user-attachments/assets/0ecd40c8-0b8b-4170-bb56-a193d5b9237c
 
 ---
 
-## 📐 클래스 다이어그램
+## **📐 클래스 다이어그램**
 전체 구조는 [**Docs/ClassDiagram.md**](Docs/ClassDiagram.md)에서 확인할 수 있습니다.
 
 ---
