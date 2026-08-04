@@ -220,5 +220,5 @@ https://github.com/user-attachments/assets/0ecd40c8-0b8b-4170-bb56-a193d5b9237c
 ---
 
 ## **🔗 참조**
-- **Notion**: [[지하 10층 Notion 링크]](https://app.notion.com/p/10-f31faf7d496e828dab0501cd8dd8dae3)
+- **Notion**: [[지하 10층 Notion 링크]](https://pinnate-earthworm-118.notion.site/10-f31faf7d496e828dab0501cd8dd8dae3)
 - **YouTube**: [[기술 데모 영상 링크]](https://www.youtube.com/watch?v=dkS35WRMzng)
