@@ -1,6 +1,7 @@
 # Basement10_portfolio
 # **🕹️ [프로젝트] 지하 10층**
-https://github.com/user-attachments/assets/64b27899-1a42-4116-ac49-444a7413d4d9
+
+https://github.com/user-attachments/assets/a18884e2-4b88-4d0a-9d88-52fda6e9c1ac
 
 > **"8번 출구 게임과 영화에서 영감을 얻어, 스토리를 추가하고 다형성과 데이터 주도 설계로 재해석한 1인 개발 호러 퍼즐 게임입니다."**
 
@@ -60,7 +61,9 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 
 
 ### **4. 다형성 기반의 이상 현상 시스템**
-https://github.com/user-attachments/assets/4fdde259-ae44-4a8a-8c78-9ef99d6194b1
+
+https://github.com/user-attachments/assets/a653e5a1-3dc7-46de-8197-0c291f981605
+
 - **추상화:** `AbnormalData` 라는 추상 클래스(ScriptableObject)로 모든 이상 현상의 공통 진입점 `ApplyAbnormal`을 정의했습니다.
 - **구체화**: 생성(`Create`), 삭제(`Delete`), 교체(`Replace`), 크기 변형(`Scale`), 사운드 변조(`Sound`), NPC 변형(`NPCTransform`) 등 각기 다른 로직을 자식 클래스에 독립적으로 구현했습니다.
 - 새로운 이상 현상을 추가할 때 `SpawnAbnormalManager` 등 기존 시스템 코드를 수정할 필요 없이 클래스와 데이터 에셋만 추가하면 되는 **개방 폐쇄 원칙(OCP)** 을 실천했습니다.
