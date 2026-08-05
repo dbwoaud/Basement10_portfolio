@@ -1,11 +1,11 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 
-public enum EndType { Bad, True }; // ¿£µù Á¾·ù
+public enum EndType { Bad, True }; // ì—”ë”© ì¢…ë¥˜
 
 public class EndingTrigger: MonoBehaviour
 {
-    [Header("¿£µù ¼³Á¤")]
+    [Header("ì—”ë”© ì„¤ì •")]
     [SerializeField] private EndType endType;
     private bool isTriggered = false;
 
