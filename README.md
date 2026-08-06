@@ -29,7 +29,7 @@ https://github.com/user-attachments/assets/a18884e2-4b88-4d0a-9d88-52fda6e9c1ac
 - `Singleton<T>` 베이스 클래스를 상속받아 `GameManager`, `SoundManager`, `FadeManager` 등 핵심 시스템의 단일성과 전역 접근성을 보장했습니다.
 - 단순 널 체크를 넘어 **`isQuitting` 플래그와 `HasInstance` 프로퍼티**를 두어, 게임 종료와 씬 언로드 시점에 파괴된 인스턴스에 접근하는 것을 방지했습니다. 
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Core/Singleton.cs#L8-L25
-- [🔗 **Singleton.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Core/Singleton.cs)
+- [🔗 **Singleton.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Core/Singleton.cs)
 - 각 매니저는 단일 책임 원칙(SRP)에 따라 자신의 역할(사운드 재생, 페이드 연출, 설정 영속화)에만 집중하도록 분리했습니다.
 
 
@@ -38,8 +38,8 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 - `EndingTrigger`는 엔딩 로직을 직접 실행하지 않고, `OnEndingTriggered` 이벤트만 발행하며, 이를 **`EndingDirector`가 구독**해 처리합니다. 마찬가지로 `ElevatorController`의 정답 선택은 `OnElevatorAnswerSelected` 이벤트로 `GameManager`에 전달됩니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Manager/Ending/EndingTrigger.cs#L11-L23
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Game/EndingDirector.cs#L16-L26
-- [🔗 **EndingTrigger.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Manager/Ending/EndingTrigger.cs)
-- [🔗 **EndingDirector.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Game/EndingDirector.cs)
+- [🔗 **EndingTrigger.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Manager/Ending/EndingTrigger.cs)
+- [🔗 **EndingDirector.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Game/EndingDirector.cs)
 
 
 ### **3. `GameManager`의 책임 분해**
@@ -54,10 +54,10 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 
 - `GameManager`는 이제 컴포넌트들을 **조립하고 제어하는 역할**만 남고, `[RequireComponent]`로 컴포넌트 누락을 컴파일 타임에 방지합니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Manager/SingletonManager/GameManager.cs#L6-L37
-- [🔗 **FloorProgress.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Game/FloorProgress.cs)
-- [🔗 **FloorRule.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Game/FloorRule.cs)
-- [🔗 **MapSpawner.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Game/MapSpawner.cs)
-- [🔗 **GameManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Manager/SingletonManager/GameManager.cs)
+- [🔗 **FloorProgress.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Game/FloorProgress.cs)
+- [🔗 **FloorRule.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Game/FloorRule.cs)
+- [🔗 **MapSpawner.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Game/MapSpawner.cs)
+- [🔗 **GameManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Manager/SingletonManager/GameManager.cs)
 
 
 ### **4. 다형성 기반의 이상현상 시스템**
@@ -67,14 +67,14 @@ https://github.com/user-attachments/assets/a653e5a1-3dc7-46de-8197-0c291f981605
 - **추상화:** `AbnormalData` 라는 추상 클래스(ScriptableObject)로 모든 이상현상의 공통 진입점 `ApplyAbnormal`을 정의했습니다.
 - **구체화**: 생성(`Create`), 삭제(`Delete`), 교체(`Replace`), 크기 변형(`Scale`), 사운드 변조(`Sound`), NPC 변형(`NPCTransform`) 등 각기 다른 로직을 자식 클래스에 독립적으로 구현했습니다.
 - 새로운 이상현상을 추가할 때 `SpawnAbnormalManager` 등 기존 시스템 코드를 수정할 필요 없이 클래스와 데이터 에셋만 추가하면 되는 **개방 폐쇄 원칙(OCP)** 을 실천했습니다.
-- [🔗 **AbnormalData.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/AbnormalData/AbnormalData.cs)
+- [🔗 **AbnormalData.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/AbnormalData/AbnormalData.cs)
 
 
 ### **5. 컴포넌트 기반의 동적 기능 확장**
 - `ScaleAbnormalData`의 Gradual(서서히 변형) 모드 실행 시, 대상 오브젝트에 `ObjectScaler` 컴포넌트를 런타임에 주입(`AddComponent`)하고 연출이 끝나면 스스로 `Destroy`하도록 했습니다.
 - 모든 오브젝트에 무거운 스크립트를 미리 붙여두지 않고 **필요할 때만 기능을 활성화**해 메모리와 연산 효율을 높였습니다.
-- [🔗 **ScaleAbnormalData.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/AbnormalData/ScaleAbnormalData/ScaleAbnormalData.cs)
-- [🔗 **ObjectScaler.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/AbnormalData/ScaleAbnormalData/ObjectScaler.cs)
+- [🔗 **ScaleAbnormalData.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/AbnormalData/ScaleAbnormalData/ScaleAbnormalData.cs)
+- [🔗 **ObjectScaler.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/AbnormalData/ScaleAbnormalData/ObjectScaler.cs)
 
 
 ### **6. 설정 시스템 — Observer 패턴 & 견고한 영속화**
@@ -84,9 +84,9 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 - **원자적 저장**: 저장 시 임시 파일에 먼저 쓴 뒤 `File.Replace`로 교체하고 `.bak` 백업을 남겨, 저장 도중 강제 종료되어도 설정 파일이 깨지지 않도록 했습니다. 읽기 실패 시에는 손상 파일을 격리(`.broken`)하고 기본값으로 복구합니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Manager/SingletonManager/SettingManager.cs#L144-L160
 - **버전 마이그레이션**: `GameSetting`에 `version` 필드를 두어, 구버전 저장 파일을 최신 스키마로 점진적으로 이관합니다.
-- [🔗 **SettingManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Manager/SingletonManager/SettingManager.cs)
-- [🔗 **SettingApplierBase.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Settings/Applier/SettingApplierBase.cs)
-- [🔗 **SettingPanel.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/UI/SettingPanel.cs)
+- [🔗 **SettingManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Manager/SingletonManager/SettingManager.cs)
+- [🔗 **SettingApplierBase.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Settings/Applier/SettingApplierBase.cs)
+- [🔗 **SettingPanel.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/UI/SettingPanel.cs)
 
 
 ### **7. 로컬라이제이션 (4개 언어)**
@@ -95,9 +95,9 @@ Unity Localization을 기반으로 **한국어 / 영어 / 일본어 / 중국어(
 - **폴백 체인**: `현재 언어 → 영어 → 한국어` 순으로 조회해, 특정 언어에 번역이 누락되어도 빈 화면 대신 대체 문구를 노출합니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Localizations/Loc.cs#L38-L58
 - **UI 대응**: `TextSizeSynchronizer`가 언어별 글자 길이 차이에 맞춰 텍스트 크기를 동기화합니다.
-- [🔗 **Loc.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Localizations/Loc.cs)
-- [🔗 **GameLanguages.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Localizations/GameLanguages.cs)
-- [🔗 **TextSizeSynchronizer.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/UI/TextSizeSynchronizer.cs)
+- [🔗 **Loc.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Localizations/Loc.cs)
+- [🔗 **GameLanguages.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Localizations/GameLanguages.cs)
+- [🔗 **TextSizeSynchronizer.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/UI/TextSizeSynchronizer.cs)
 
 ---
 
@@ -109,7 +109,7 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 - **Problem**: 맵·UI 계층의 수많은 하위 오브젝트에서 특정 대상을 찾을 때, 씬 전역을 훑는 `Find` 계열의 *O(N)* 탐색은 성능 저하를 유발합니다.
 - **Solution**: `Stack<Transform>` 기반의 **반복적 DFS**를 직접 구현해 정적 유틸(`UIBinder`)로 추출했습니다. 탐색을 특정 루트 하위로 국소화하고, 재귀 대신 반복문을 사용해 스택 오버플로 위험을 제거했습니다. 이 유틸은 이상현상 대상 탐색(`AbnormalData.FindTarget`)과 UI 자동 바인딩 양쪽에서 재사용됩니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Core/UIBinder.cs#L8-L28
-- [🔗 **UIBinder.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Core/UIBinder.cs)
+- [🔗 **UIBinder.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Core/UIBinder.cs)
 
 
 ### **2. [데이터 주도] ScriptableObject 기반 설계** 
@@ -125,7 +125,7 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 ### **4. [UI 자동화] 자동 바인딩 & 선언적 시퀀스**
 - `AutoBindUI()`에서 `UIBinder.Find<T>`로 하위 요소를 이름으로 탐색·할당하고, `UIBinder.BindButtons(root, handlers)`에 **`{버튼 이름 → 콜백}` 딕셔너리**를 넘겨 버튼 이벤트를 일괄 연결했습니다. 수동 인스펙터 할당의 번거로움과 휴먼 에러를 제거했습니다.
 - `FadeManager`·엔딩 시퀀스는 코루틴과 `WaitUntil`을 조합해 페이드 → 사운드 → 씬 전환으로 이어지는 복잡한 연출을 선언적으로 관리합니다.
-- [🔗 **FadeManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Manager/SingletonManager/FadeManager.cs)
+- [🔗 **FadeManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Manager/SingletonManager/FadeManager.cs)
 
 
 ### **5. [시스템 통합] 사운드 · 로직 연동** 
@@ -144,13 +144,13 @@ https://github.com/user-attachments/assets/ede305d6-ae27-4c9f-b923-ae368601058a
 
 https://github.com/user-attachments/assets/9a40a006-379f-490a-8833-449d049d41be
 
-- [🔗 **FloorNumberDisplay.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/UI/FloorNumberDisplay.cs)
+- [🔗 **FloorNumberDisplay.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/UI/FloorNumberDisplay.cs)
 
   
 ### `ProfilerRecorder` 기반 정량 계측 
 성능을 눈으로 직접 확인할 수 있도록, `ProfilerRecorder` API로 **프레임 타임, 배칭 방식별 드로우콜, 삼각형/버텍스, 그림자 캐스터, GC 할당량**을 0.5초 간격으로 수집해 **CSV로 기록**하는 `PerformanceLogger`를 만들었습니다.
 - 이를 통해 GC 최적화가 유효함을 확인하고, **실제 병목이 렌더링**임을 정량적으로 진단했습니다.
-- [🔗 **PerformanceLogger.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Profiling/PerformanceLogger.cs)
+- [🔗 **PerformanceLogger.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Profiling/PerformanceLogger.cs)
 
 ---
 
