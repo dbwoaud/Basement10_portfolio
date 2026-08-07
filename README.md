@@ -64,7 +64,7 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 `FloorProgress` / `FloorRule` / `GameSetting`을 Unity 런타임에서 떼어낸 결과,
 Unity 에디터 실행 없이 게임 규칙 자체를 검증할 수 있게 되었습니다.
 
-| 테스트 클래스 | 케이스 | 검증 대상 |
+| 테스트 파일 | 케이스 | 검증 대상 |
 |---|---|---|
 | `FloorRuleTests` | 10 | 정답 판정, 다음 층 결정, 맵/이상현상 선택 규칙 |
 | `FloorProgressTests` | 8 | 층 진행, 방문 기록 멱등성, 실패 회귀 |
