@@ -14,7 +14,7 @@ https://github.com/user-attachments/assets/a18884e2-4b88-4d0a-9d88-52fda6e9c1ac
 - **기술 스택**: Unity(Built-in RP), C#, NavMesh, ScriptableObject, Unity Localization, Unity Test Framework, Unity Profiler
 - **핵심 컨셉**: 8번 출구 게임에 스토리를 더해 재해석한 1인칭 호러 퍼즐 게임
 - **주요 성과**
-  1. SOLID 원칙 기반 시스템 구축 및 자료구조 최적화를 통한 성능 개선
+  1. SOLID 원칙 기반 시스템 구축과 오브젝트 풀링을 통한 런타임 할당 제거
   2. `GameManager`를 **순수 로직 + Unity 협력자**로 분리해 **EditMode 단위 테스트 28개** 확보
   3. `ProfilerRecorder` 기반 **정량 성능 계측** 및 렌더링 병목 진단
   4. 4개 언어 로컬라이제이션, 원자적 저장 기반 설정 시스템 등 **상용 배포 수준의 사이드 시스템** 구현
@@ -60,7 +60,21 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 - [🔗 **GameManager.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Manager/SingletonManager/GameManager.cs)
 
 
-### **4. 다형성 기반의 이상현상 시스템**
+### **4. 순수 로직 분리로 확보한 단위 테스트 (28개)**
+`FloorProgress` / `FloorRule` / `GameSetting`을 Unity 런타임에서 떼어낸 결과,
+Unity 에디터 실행 없이 게임 규칙 자체를 검증할 수 있게 되었습니다.
+
+| 테스트 클래스 | 케이스 | 검증 대상 |
+|---|---|---|
+| `FloorRuleTests` | 10 | 정답 판정, 다음 층 결정, 맵/이상현상 선택 규칙 |
+| `FloorProgressTests` | 8 | 층 진행, 방문 기록 멱등성, 실패 회귀 |
+| `GameSettingTests` | 10 | 값 범위 보정, 로케일 폴백, Clone 독립성 |
+
+테스트 이름을 한국어 문장으로 작성해(`오답_제출_시_시작_층으로_돌아간다`)
+테스트 목록 자체가 게임 규칙 명세로 읽히도록 했습니다.
+
+
+### **5. 다형성 기반의 이상현상 시스템**
 
 https://github.com/user-attachments/assets/a653e5a1-3dc7-46de-8197-0c291f981605
 
@@ -70,14 +84,14 @@ https://github.com/user-attachments/assets/a653e5a1-3dc7-46de-8197-0c291f981605
 - [🔗 **AbnormalData.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/AbnormalData/AbnormalData.cs)
 
 
-### **5. 컴포넌트 기반의 동적 기능 확장**
+### **6. 컴포넌트 기반의 동적 기능 확장**
 - `ScaleAbnormalData`의 Gradual(서서히 변형) 모드 실행 시, 대상 오브젝트에 `ObjectScaler` 컴포넌트를 런타임에 주입(`AddComponent`)하고 연출이 끝나면 스스로 `Destroy`하도록 했습니다.
 - 모든 오브젝트에 무거운 스크립트를 미리 붙여두지 않고 **필요할 때만 기능을 활성화**해 메모리와 연산 효율을 높였습니다.
 - [🔗 **ScaleAbnormalData.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/AbnormalData/ScaleAbnormalData/ScaleAbnormalData.cs)
 - [🔗 **ObjectScaler.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/AbnormalData/ScaleAbnormalData/ObjectScaler.cs)
 
 
-### **6. 설정 시스템 — Observer 패턴 & 견고한 영속화**
+### **7. 설정 시스템 — Observer 패턴 & 견고한 영속화**
 인게임 설정(언어 · 그래픽 프리셋 · 해상도 · 볼륨 · 감도 · 헤드밥)을 상용 배포 기준으로 구현했습니다.
 - **Observer 패턴**: `SettingManager`가 설정 변경 시 `OnSettingsApplied` 이벤트를 발행하고, 각 적용기(`AudioVolumeApplier`, `DisplayApplier`, `GraphicPresetApplier`, `CameraLook`, `HeadBob`, `LanguageApplier`)는 `SettingApplierBase`를 상속해 자신에게 필요한 설정만 독립적으로 구독 및 적용합니다. 설정 항목이 늘어도 `SettingManager`의 코드는 그대로입니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Settings/Applier/SettingApplierBase.cs#L4-L24
@@ -89,7 +103,7 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 - [🔗 **SettingPanel.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/UI/SettingPanel.cs)
 
 
-### **7. 로컬라이제이션 (4개 언어)**
+### **8. 로컬라이제이션 (4개 언어)**
 Unity Localization을 기반으로 **한국어 / 영어 / 일본어 / 중국어(간체)** 를 지원합니다.
 - **정적 파사드 `Loc`**: `Loc.Story(key)` / `Loc.UI(key)` 형태로 어디서든 번역을 조회하고, 초기화가 끝날 때까지 안전하게 대기하는 `EnsureReady()` 코루틴을 제공합니다.
 - **폴백 체인**: `현재 언어 → 영어 → 한국어` 순으로 조회해, 특정 언어에 번역이 누락되어도 빈 화면 대신 대체 문구를 노출합니다.
@@ -105,8 +119,8 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 ## **🚀 기술적 도전**
 
  
-### **1. [최적화] 자료구조(Stack) 기반 DFS 탐색 — `UIBinder`**
-- **Problem**: 맵·UI 계층의 수많은 하위 오브젝트에서 특정 대상을 찾을 때, 씬 전역을 훑는 `Find` 계열의 *O(N)* 탐색은 성능 저하를 유발합니다.
+### **1. [탐색 범위 국소화] 자료구조(Stack) 기반 DFS 탐색 — `UIBinder`**
+- **Problem**: 맵, UI 계층의 수많은 하위 오브젝트에서 특정 대상을 찾을 때, 씬 전역을 훑는 `Find` 계열의 *O(N)* 탐색은 성능 저하를 유발합니다.
 - **Solution**: `Stack<Transform>` 기반의 **반복적 DFS**를 직접 구현해 정적 유틸(`UIBinder`)로 추출했습니다. 탐색을 특정 루트 하위로 국소화하고, 재귀 대신 반복문을 사용해 스택 오버플로 위험을 제거했습니다. 이 유틸은 이상현상 대상 탐색(`AbnormalData.FindTarget`)과 UI 자동 바인딩 양쪽에서 재사용됩니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Core/UIBinder.cs#L8-L28
 - [🔗 **UIBinder.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Core/UIBinder.cs)
