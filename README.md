@@ -120,7 +120,7 @@ https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5
 
  
 ### **1. [탐색 범위 국소화] 자료구조(Stack) 기반 DFS 탐색 — `UIBinder`**
-- **Problem**: 맵, UI 계층의 수많은 하위 오브젝트에서 특정 대상을 찾을 때, 씬 전역을 훑는 `Find` 계열의 *O(N)* 탐색은 성능 저하를 유발합니다.
+- **Problem**: 맵, UI 계층의 수많은 하위 오브젝트에서 특정 대상을 찾을 때, 씬 전역을 훑는 Find 계열 탐색은 대상과 무관한 오브젝트까지 순회하며, 재귀 구현은 계층이 깊어질수록 스택 오버플로 위험이 있습니다.
 - **Solution**: `Stack<Transform>` 기반의 **반복적 DFS**를 직접 구현해 정적 유틸(`UIBinder`)로 추출했습니다. 탐색을 특정 루트 하위로 국소화하고, 재귀 대신 반복문을 사용해 스택 오버플로 위험을 제거했습니다. 이 유틸은 이상현상 대상 탐색(`AbnormalData.FindTarget`)과 UI 자동 바인딩 양쪽에서 재사용됩니다.
 https://github.com/dbwoaud/Basement10_portfolio/blob/5b20dc975c01c5f755e6fd6c7a5fb4c674a11b4d/Scripts/Core/UIBinder.cs#L8-L28
 - [🔗 **UIBinder.cs 코드 보기**](https://github.com/dbwoaud/Basement10_portfolio/blob/main/Scripts/Core/UIBinder.cs)
